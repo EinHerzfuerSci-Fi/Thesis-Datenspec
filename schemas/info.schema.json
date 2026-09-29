@@ -1,0 +1,396 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-schema-version": 1,
+  "$defs": {
+    "InfoCapture": {
+      "description": "Timing of one TCS3448 capture cycle.",
+      "properties": {
+        "sequence": {
+          "description": "illumination values in capture order.",
+          "items": {
+            "enum": [
+              "dark",
+              "nir",
+              "blue",
+              "vis"
+            ],
+            "type": "string"
+          },
+          "title": "Sequence",
+          "type": "array",
+          "x-since": 1
+        },
+        "settle_ms": {
+          "description": "LED settling time before integration starts.",
+          "minimum": 0,
+          "title": "Settle Ms",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "ms"
+        },
+        "on_ms": {
+          "description": "LED on-time per capture.",
+          "minimum": 0,
+          "title": "On Ms",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "ms"
+        }
+      },
+      "required": [
+        "sequence",
+        "settle_ms",
+        "on_ms"
+      ],
+      "title": "InfoCapture",
+      "type": "object"
+    },
+    "InfoDs18b20": {
+      "properties": {
+        "resolution_bits": {
+          "maximum": 12,
+          "minimum": 9,
+          "title": "Resolution Bits",
+          "type": "integer",
+          "x-since": 1
+        }
+      },
+      "required": [
+        "resolution_bits"
+      ],
+      "title": "InfoDs18b20",
+      "type": "object"
+    },
+    "InfoPio": {
+      "properties": {
+        "hz": {
+          "description": "PIO state machine clock.",
+          "exclusiveMinimum": 0,
+          "title": "Hz",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "Hz"
+        },
+        "prog": {
+          "description": "PIO program version.",
+          "title": "Prog",
+          "type": "string",
+          "x-since": 1
+        }
+      },
+      "required": [
+        "hz",
+        "prog"
+      ],
+      "title": "InfoPio",
+      "type": "object"
+    },
+    "InfoPwm": {
+      "properties": {
+        "hz": {
+          "description": "LED dimming PWM frequency.",
+          "exclusiveMinimum": 0,
+          "title": "Hz",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "Hz"
+        },
+        "sync": {
+          "description": "Whether integration and PWM are phase-locked.",
+          "title": "Sync",
+          "type": "boolean",
+          "x-since": 1
+        }
+      },
+      "required": [
+        "hz",
+        "sync"
+      ],
+      "title": "InfoPwm",
+      "type": "object"
+    },
+    "InfoSd": {
+      "properties": {
+        "total": {
+          "minimum": 0,
+          "title": "Total",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "B"
+        },
+        "free": {
+          "minimum": 0,
+          "title": "Free",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "B"
+        }
+      },
+      "required": [
+        "total",
+        "free"
+      ],
+      "title": "InfoSd",
+      "type": "object"
+    },
+    "InfoSys": {
+      "properties": {
+        "device_name": {
+          "description": "Configurable device name used for better readability",
+          "title": "Device Name",
+          "type": "string",
+          "x-since": 1
+        },
+        "reset_cause": {
+          "title": "Reset Cause",
+          "type": "string",
+          "x-since": 1
+        },
+        "sample_interval_ms": {
+          "description": "Interval between measurement cycles.",
+          "exclusiveMinimum": 0,
+          "title": "Sample Interval Ms",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "ms"
+        }
+      },
+      "required": [
+        "device_name",
+        "reset_cause",
+        "sample_interval_ms"
+      ],
+      "title": "InfoSys",
+      "type": "object"
+    },
+    "InfoTcs3448": {
+      "properties": {
+        "smux_mode": {
+          "title": "Smux Mode",
+          "type": "integer",
+          "x-since": 1
+        },
+        "agc": {
+          "description": "Gain control mode of the tcs3448 sensor.",
+          "title": "Agc",
+          "type": "boolean",
+          "x-since": 1
+        }
+      },
+      "required": [
+        "smux_mode",
+        "agc"
+      ],
+      "title": "InfoTcs3448",
+      "type": "object"
+    },
+    "LedInfo": {
+      "properties": {
+        "id": {
+          "enum": [
+            "nir",
+            "blue",
+            "vis"
+          ],
+          "title": "Id",
+          "type": "string",
+          "x-since": 1
+        },
+        "peak_nm": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Peak wavelength; null for the broadband 'vis' LED.",
+          "title": "Peak Nm",
+          "x-since": 1,
+          "x-unit": "nm"
+        },
+        "pin": {
+          "description": "GPIO number.",
+          "minimum": 0,
+          "title": "Pin",
+          "type": "integer",
+          "x-since": 1
+        }
+      },
+      "required": [
+        "id",
+        "peak_nm",
+        "pin"
+      ],
+      "title": "LedInfo",
+      "type": "object"
+    },
+    "SensorsFound": {
+      "description": "Sensors detected at boot. Sensors added later are optional.",
+      "properties": {
+        "ds18b20": {
+          "title": "Ds18B20",
+          "type": "boolean",
+          "x-since": 1
+        },
+        "dht22": {
+          "title": "Dht22",
+          "type": "boolean",
+          "x-since": 1
+        },
+        "tcs3448": {
+          "title": "Tcs3448",
+          "type": "boolean",
+          "x-since": 1
+        }
+      },
+      "required": [
+        "ds18b20",
+        "dht22",
+        "tcs3448"
+      ],
+      "title": "SensorsFound",
+      "type": "object"
+    }
+  },
+  "description": "Configuration that is fixed for the lifetime of a boot. Sent once per boot, retained.\nGrouped per subsystem like tele; new subsystems are added as optional groups.",
+  "properties": {
+    "v": {
+      "description": "Version of the schema. Increased only on breaking changes.",
+      "maximum": 1,
+      "minimum": 1,
+      "title": "V",
+      "type": "integer",
+      "x-since": 1
+    },
+    "k": {
+      "const": "info",
+      "title": "K",
+      "type": "string",
+      "x-since": 1
+    },
+    "dev": {
+      "description": "Hardware ID of the microcontroller",
+      "pattern": "^[0-9a-f]{16}$",
+      "title": "Dev",
+      "type": "string",
+      "x-since": 1
+    },
+    "fw": {
+      "description": "Firmware version (optionally containing the git commit hash)",
+      "pattern": "^(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)(?:-(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(?:\\+[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*)?$",
+      "title": "Fw",
+      "type": "string",
+      "x-since": 1
+    },
+    "boot": {
+      "description": "Boot counter, stored on flash memory of the microcontroller.",
+      "minimum": 0,
+      "title": "Boot",
+      "type": "integer",
+      "x-since": 1
+    },
+    "seq": {
+      "description": "Sequence number per boot. (dev, boot, seq) is the unique key for dedup (QoS 1, SD replay) and gap detection.",
+      "minimum": 0,
+      "title": "Seq",
+      "type": "integer",
+      "x-since": 1
+    },
+    "up": {
+      "description": "Monotonic seconds since boot, ms resolution. Time of measurement/event, not of sending. Use for intervals: ts may jump on re-sync.",
+      "minimum": 0.0,
+      "title": "Up",
+      "type": "number",
+      "x-since": 1,
+      "x-unit": "s"
+    },
+    "ts": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Unix seconds UTC after NTP sync, captured together with up. null while unsynced; key is mandatory.",
+      "title": "Ts",
+      "x-since": 1,
+      "x-unit": "s"
+    },
+    "sys": {
+      "$ref": "#/$defs/InfoSys",
+      "x-since": 1
+    },
+    "sensors": {
+      "$ref": "#/$defs/SensorsFound",
+      "description": "Sensors detected at boot. Firmware does not rescan, so this is not updated during the boot; data records show which sensors actually respond. Sensor configuration is in the per-sensor groups regardless of detection.",
+      "x-since": 1
+    },
+    "ds18b20": {
+      "$ref": "#/$defs/InfoDs18b20",
+      "x-since": 1
+    },
+    "tcs3448": {
+      "$ref": "#/$defs/InfoTcs3448",
+      "x-since": 1
+    },
+    "leds": {
+      "items": {
+        "$ref": "#/$defs/LedInfo"
+      },
+      "title": "Leds",
+      "type": "array",
+      "x-since": 1
+    },
+    "capture": {
+      "$ref": "#/$defs/InfoCapture",
+      "x-since": 1
+    },
+    "pio": {
+      "$ref": "#/$defs/InfoPio",
+      "x-since": 1
+    },
+    "pwm": {
+      "$ref": "#/$defs/InfoPwm",
+      "x-since": 1
+    },
+    "sd": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/InfoSd"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "null if no SD card is mounted.",
+      "x-since": 1
+    }
+  },
+  "required": [
+    "v",
+    "k",
+    "dev",
+    "fw",
+    "boot",
+    "seq",
+    "up",
+    "ts",
+    "sys",
+    "sensors",
+    "ds18b20",
+    "tcs3448",
+    "leds",
+    "capture",
+    "pio",
+    "pwm",
+    "sd"
+  ],
+  "title": "InfoRecord",
+  "type": "object"
+}

@@ -40,3 +40,5 @@ ignore = ["E501"]
 "tests/**" = ["S101", "PLR2004"]
 # Pydantic surfaces the ValueError message in ValidationError; that message is the point.
 "src/datenspec/models/**" = ["TRY003"]
+# Generator consistency errors: the message tells the developer what drifted.
+"src/datenspec/codegen/**" = ["TRY003"]

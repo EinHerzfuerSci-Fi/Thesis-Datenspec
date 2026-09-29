@@ -14,7 +14,6 @@ Illumination = Literal["dark", "nir", "blue", "vis"]
 AlarmId = Literal["temp_high", "temp_low", "humidity_high"]
 AlarmSeverity = Literal["warn", "crit"]
 AlertState = Literal["raised", "cleared"]
-Severity = Literal["info", "warn", "crit"]
 
 ModuleState = Literal["DISCONNECTED", "CONNECTED", "DEGRADED"]
 

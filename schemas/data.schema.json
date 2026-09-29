@@ -1,0 +1,527 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-schema-version": 1,
+  "$defs": {
+    "Dht22": {
+      "properties": {
+        "t": {
+          "anyOf": [
+            {
+              "maximum": 80.0,
+              "minimum": -40.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "T",
+          "x-since": 1,
+          "x-unit": "°C"
+        },
+        "rh": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Relative humidity as fraction, not percent.",
+          "title": "Rh",
+          "x-since": 1,
+          "x-unit": "1"
+        }
+      },
+      "required": [
+        "t",
+        "rh"
+      ],
+      "title": "Dht22",
+      "type": "object"
+    },
+    "LedDuty": {
+      "description": "Duty-cycle setpoint per LED. Model, not dict, so all three LEDs are required.",
+      "properties": {
+        "nir": {
+          "description": "PWM duty-cycle setpoint. Light output is neither linear in duty cycle nor independent of LED temperature.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Nir",
+          "type": "number",
+          "x-since": 1,
+          "x-unit": "1"
+        },
+        "blue": {
+          "description": "PWM duty-cycle setpoint. Light output is neither linear in duty cycle nor independent of LED temperature.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Blue",
+          "type": "number",
+          "x-since": 1,
+          "x-unit": "1"
+        },
+        "vis": {
+          "description": "PWM duty-cycle setpoint. Light output is neither linear in duty cycle nor independent of LED temperature.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Vis",
+          "type": "number",
+          "x-since": 1,
+          "x-unit": "1"
+        }
+      },
+      "required": [
+        "nir",
+        "blue",
+        "vis"
+      ],
+      "title": "LedDuty",
+      "type": "object"
+    },
+    "Measurements": {
+      "description": "One key per sensor; null means the sensor did not respond. Sensors added later are\noptional (default null).",
+      "properties": {
+        "ds18b20": {
+          "anyOf": [
+            {
+              "patternProperties": {
+                "^[0-9a-f]{16}$": {
+                  "anyOf": [
+                    {
+                      "maximum": 125.0,
+                      "minimum": -55.0,
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Temperature per ROM ID; null if the bus does not respond. Firmware should send a failed sensor as null; 85.0 (power-on default) is accepted but flagged as suspect.",
+          "title": "Ds18B20",
+          "x-since": 1,
+          "x-unit": "°C"
+        },
+        "dht22": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Dht22"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "x-since": 1
+        },
+        "tcs3448": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/TcsCapture"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Captures in acquisition order, each under different illumination.",
+          "title": "Tcs3448",
+          "x-since": 1
+        }
+      },
+      "required": [
+        "ds18b20",
+        "dht22",
+        "tcs3448"
+      ],
+      "title": "Measurements",
+      "type": "object"
+    },
+    "TcsCapture": {
+      "description": "One integration under one illumination.",
+      "properties": {
+        "ill": {
+          "enum": [
+            "dark",
+            "nir",
+            "blue",
+            "vis"
+          ],
+          "title": "Ill",
+          "type": "string",
+          "x-since": 1
+        },
+        "led": {
+          "$ref": "#/$defs/LedDuty",
+          "x-since": 1
+        },
+        "dt": {
+          "description": "Start of integration relative to the record's up.",
+          "title": "Dt",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "ms"
+        },
+        "gain": {
+          "description": "Gain index 0..12 (factor 0.5..2048) actually used; read back from the status register when AGC is active.",
+          "maximum": 12,
+          "minimum": 0,
+          "title": "Gain",
+          "type": "integer",
+          "x-since": 1
+        },
+        "atime": {
+          "description": "Integration time = (atime+1)*(astep+1)*2.78 us.",
+          "maximum": 255,
+          "minimum": 0,
+          "title": "Atime",
+          "type": "integer",
+          "x-since": 1
+        },
+        "astep": {
+          "description": "See atime. Full scale = min(65535, (atime+1)*(astep+1)), computed, not sent.",
+          "maximum": 65534,
+          "minimum": 0,
+          "title": "Astep",
+          "type": "integer",
+          "x-since": 1
+        },
+        "raw": {
+          "$ref": "#/$defs/TcsRaw",
+          "x-since": 1
+        },
+        "sat": {
+          "description": "Analog or digital saturation.",
+          "title": "Sat",
+          "type": "boolean",
+          "x-since": 1
+        },
+        "lux": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lux",
+          "x-since": 1,
+          "x-unit": "lx"
+        },
+        "cct": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cct",
+          "x-since": 1,
+          "x-unit": "K"
+        },
+        "cie_x": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cie X",
+          "x-since": 1,
+          "x-unit": "1"
+        },
+        "cie_y": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cie Y",
+          "x-since": 1,
+          "x-unit": "1"
+        }
+      },
+      "required": [
+        "ill",
+        "led",
+        "dt",
+        "gain",
+        "atime",
+        "astep",
+        "raw",
+        "sat"
+      ],
+      "title": "TcsCapture",
+      "type": "object"
+    },
+    "TcsRaw": {
+      "description": "Raw 16-bit counts per spectral channel. Flicker slots (5, 11, 17) are not sent.",
+      "properties": {
+        "f1": {
+          "maximum": 65535,
+          "minimum": 0,
+          "title": "F1",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "counts"
+        },
+        "f2": {
+          "maximum": 65535,
+          "minimum": 0,
+          "title": "F2",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "counts"
+        },
+        "f3": {
+          "maximum": 65535,
+          "minimum": 0,
+          "title": "F3",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "counts"
+        },
+        "f4": {
+          "maximum": 65535,
+          "minimum": 0,
+          "title": "F4",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "counts"
+        },
+        "f5": {
+          "maximum": 65535,
+          "minimum": 0,
+          "title": "F5",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "counts"
+        },
+        "f6": {
+          "maximum": 65535,
+          "minimum": 0,
+          "title": "F6",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "counts"
+        },
+        "f7": {
+          "maximum": 65535,
+          "minimum": 0,
+          "title": "F7",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "counts"
+        },
+        "f8": {
+          "maximum": 65535,
+          "minimum": 0,
+          "title": "F8",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "counts"
+        },
+        "fz": {
+          "maximum": 65535,
+          "minimum": 0,
+          "title": "Fz",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "counts"
+        },
+        "fy": {
+          "maximum": 65535,
+          "minimum": 0,
+          "title": "Fy",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "counts"
+        },
+        "fxl": {
+          "maximum": 65535,
+          "minimum": 0,
+          "title": "Fxl",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "counts"
+        },
+        "nir": {
+          "maximum": 65535,
+          "minimum": 0,
+          "title": "Nir",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "counts"
+        },
+        "vis": {
+          "maximum": 65535,
+          "minimum": 0,
+          "title": "Vis",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "counts"
+        },
+        "vis_2": {
+          "anyOf": [
+            {
+              "maximum": 65535,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "VIS from the 2nd SMUX cycle; differs from vis if light changed mid-measurement.",
+          "title": "Vis 2",
+          "x-since": 1,
+          "x-unit": "counts"
+        },
+        "vis_3": {
+          "anyOf": [
+            {
+              "maximum": 65535,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "VIS from the 3rd SMUX cycle.",
+          "title": "Vis 3",
+          "x-since": 1,
+          "x-unit": "counts"
+        }
+      },
+      "required": [
+        "f1",
+        "f2",
+        "f3",
+        "f4",
+        "f5",
+        "f6",
+        "f7",
+        "f8",
+        "fz",
+        "fy",
+        "fxl",
+        "nir",
+        "vis"
+      ],
+      "title": "TcsRaw",
+      "type": "object"
+    }
+  },
+  "description": "One measurement cycle.",
+  "properties": {
+    "v": {
+      "description": "Version of the schema. Increased only on breaking changes.",
+      "maximum": 1,
+      "minimum": 1,
+      "title": "V",
+      "type": "integer",
+      "x-since": 1
+    },
+    "k": {
+      "const": "data",
+      "title": "K",
+      "type": "string",
+      "x-since": 1
+    },
+    "dev": {
+      "description": "Hardware ID of the microcontroller",
+      "pattern": "^[0-9a-f]{16}$",
+      "title": "Dev",
+      "type": "string",
+      "x-since": 1
+    },
+    "fw": {
+      "description": "Firmware version (optionally containing the git commit hash)",
+      "pattern": "^(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)(?:-(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(?:\\+[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*)?$",
+      "title": "Fw",
+      "type": "string",
+      "x-since": 1
+    },
+    "boot": {
+      "description": "Boot counter, stored on flash memory of the microcontroller.",
+      "minimum": 0,
+      "title": "Boot",
+      "type": "integer",
+      "x-since": 1
+    },
+    "seq": {
+      "description": "Sequence number per boot. (dev, boot, seq) is the unique key for dedup (QoS 1, SD replay) and gap detection.",
+      "minimum": 0,
+      "title": "Seq",
+      "type": "integer",
+      "x-since": 1
+    },
+    "up": {
+      "description": "Monotonic seconds since boot, ms resolution. Time of measurement/event, not of sending. Use for intervals: ts may jump on re-sync.",
+      "minimum": 0.0,
+      "title": "Up",
+      "type": "number",
+      "x-since": 1,
+      "x-unit": "s"
+    },
+    "ts": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Unix seconds UTC after NTP sync, captured together with up. null while unsynced; key is mandatory.",
+      "title": "Ts",
+      "x-since": 1,
+      "x-unit": "s"
+    },
+    "m": {
+      "$ref": "#/$defs/Measurements",
+      "x-since": 1
+    }
+  },
+  "required": [
+    "v",
+    "k",
+    "dev",
+    "fw",
+    "boot",
+    "seq",
+    "up",
+    "ts",
+    "m"
+  ],
+  "title": "DataRecord",
+  "type": "object"
+}

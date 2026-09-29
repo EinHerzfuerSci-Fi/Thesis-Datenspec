@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-schema-version": 1,
+  "dependentRequired": {
+    "val": [
+      "thr"
+    ]
+  },
+  "description": "Record of raised or cleared alarms.",
+  "properties": {
+    "v": {
+      "description": "Version of the schema. Increased only on breaking changes.",
+      "maximum": 1,
+      "minimum": 1,
+      "title": "V",
+      "type": "integer",
+      "x-since": 1
+    },
+    "k": {
+      "const": "alert",
+      "title": "K",
+      "type": "string",
+      "x-since": 1
+    },
+    "dev": {
+      "description": "Hardware ID of the microcontroller",
+      "pattern": "^[0-9a-f]{16}$",
+      "title": "Dev",
+      "type": "string",
+      "x-since": 1
+    },
+    "fw": {
+      "description": "Firmware version (optionally containing the git commit hash)",
+      "pattern": "^(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)(?:-(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(?:\\+[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*)?$",
+      "title": "Fw",
+      "type": "string",
+      "x-since": 1
+    },
+    "boot": {
+      "description": "Boot counter, stored on flash memory of the microcontroller.",
+      "minimum": 0,
+      "title": "Boot",
+      "type": "integer",
+      "x-since": 1
+    },
+    "seq": {
+      "description": "Sequence number per boot. (dev, boot, seq) is the unique key for dedup (QoS 1, SD replay) and gap detection.",
+      "minimum": 0,
+      "title": "Seq",
+      "type": "integer",
+      "x-since": 1
+    },
+    "up": {
+      "description": "Monotonic seconds since boot, ms resolution. Time of measurement/event, not of sending. Use for intervals: ts may jump on re-sync.",
+      "minimum": 0.0,
+      "title": "Up",
+      "type": "number",
+      "x-since": 1,
+      "x-unit": "s"
+    },
+    "ts": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Unix seconds UTC after NTP sync, captured together with up. null while unsynced; key is mandatory.",
+      "title": "Ts",
+      "x-since": 1,
+      "x-unit": "s"
+    },
+    "id": {
+      "enum": [
+        "temp_high",
+        "temp_low",
+        "humidity_high"
+      ],
+      "title": "Id",
+      "type": "string",
+      "x-since": 1
+    },
+    "state": {
+      "enum": [
+        "raised",
+        "cleared"
+      ],
+      "title": "State",
+      "type": "string",
+      "x-since": 1
+    },
+    "src": {
+      "description": "Source of the alert.",
+      "title": "Src",
+      "type": "string",
+      "x-since": 1
+    },
+    "val": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Val",
+      "x-since": 1
+    },
+    "thr": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Thr",
+      "x-since": 1
+    },
+    "sev": {
+      "enum": [
+        "warn",
+        "crit"
+      ],
+      "title": "Sev",
+      "type": "string",
+      "x-since": 1
+    },
+    "ref_seq": {
+      "description": "seq of the data record that triggered the transition.",
+      "minimum": 0,
+      "title": "Ref Seq",
+      "type": "integer",
+      "x-since": 1
+    }
+  },
+  "required": [
+    "v",
+    "k",
+    "dev",
+    "fw",
+    "boot",
+    "seq",
+    "up",
+    "ts",
+    "id",
+    "state",
+    "src",
+    "sev",
+    "ref_seq"
+  ],
+  "title": "AlertRecord",
+  "type": "object"
+}

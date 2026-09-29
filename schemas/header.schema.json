@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-schema-version": 1,
+  "description": "Fields present in every JSON record.",
+  "properties": {
+    "v": {
+      "description": "Version of the schema. Increased only on breaking changes.",
+      "maximum": 1,
+      "minimum": 1,
+      "title": "V",
+      "type": "integer",
+      "x-since": 1
+    },
+    "k": {
+      "description": "Record kind.",
+      "enum": [
+        "data",
+        "alert",
+        "tele",
+        "err",
+        "info"
+      ],
+      "title": "K",
+      "type": "string",
+      "x-since": 1
+    },
+    "dev": {
+      "description": "Hardware ID of the microcontroller",
+      "pattern": "^[0-9a-f]{16}$",
+      "title": "Dev",
+      "type": "string",
+      "x-since": 1
+    },
+    "fw": {
+      "description": "Firmware version (optionally containing the git commit hash)",
+      "pattern": "^(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)(?:-(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(?:\\+[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*)?$",
+      "title": "Fw",
+      "type": "string",
+      "x-since": 1
+    },
+    "boot": {
+      "description": "Boot counter, stored on flash memory of the microcontroller.",
+      "minimum": 0,
+      "title": "Boot",
+      "type": "integer",
+      "x-since": 1
+    },
+    "seq": {
+      "description": "Sequence number per boot. (dev, boot, seq) is the unique key for dedup (QoS 1, SD replay) and gap detection.",
+      "minimum": 0,
+      "title": "Seq",
+      "type": "integer",
+      "x-since": 1
+    },
+    "up": {
+      "description": "Monotonic seconds since boot, ms resolution. Time of measurement/event, not of sending. Use for intervals: ts may jump on re-sync.",
+      "minimum": 0.0,
+      "title": "Up",
+      "type": "number",
+      "x-since": 1,
+      "x-unit": "s"
+    },
+    "ts": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Unix seconds UTC after NTP sync, captured together with up. null while unsynced; key is mandatory.",
+      "title": "Ts",
+      "x-since": 1,
+      "x-unit": "s"
+    }
+  },
+  "required": [
+    "v",
+    "k",
+    "dev",
+    "fw",
+    "boot",
+    "seq",
+    "up",
+    "ts"
+  ],
+  "title": "RecordHeader",
+  "type": "object"
+}

@@ -1,0 +1,299 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-schema-version": 1,
+  "$defs": {
+    "TeleBuf": {
+      "properties": {
+        "fill": {
+          "description": "Records currently held in the RAM buffer.",
+          "minimum": 0,
+          "title": "Fill",
+          "type": "integer",
+          "x-since": 1
+        },
+        "cap": {
+          "description": "RAM buffer capacity in records.",
+          "minimum": 0,
+          "title": "Cap",
+          "type": "integer",
+          "x-since": 1
+        }
+      },
+      "required": [
+        "fill",
+        "cap"
+      ],
+      "title": "TeleBuf",
+      "type": "object"
+    },
+    "TeleMqtt": {
+      "properties": {
+        "state": {
+          "enum": [
+            "DISCONNECTED",
+            "CONNECTED",
+            "DEGRADED"
+          ],
+          "title": "State",
+          "type": "string",
+          "x-since": 1
+        },
+        "reconnects": {
+          "minimum": 0,
+          "title": "Reconnects",
+          "type": "integer",
+          "x-since": 1
+        },
+        "pub_ok": {
+          "minimum": 0,
+          "title": "Pub Ok",
+          "type": "integer",
+          "x-since": 1
+        },
+        "pub_fail": {
+          "minimum": 0,
+          "title": "Pub Fail",
+          "type": "integer",
+          "x-since": 1
+        }
+      },
+      "required": [
+        "state",
+        "reconnects",
+        "pub_ok",
+        "pub_fail"
+      ],
+      "title": "TeleMqtt",
+      "type": "object"
+    },
+    "TeleNtp": {
+      "properties": {
+        "last_up": {
+          "description": "up at the last successful NTP sync.",
+          "minimum": 0.0,
+          "title": "Last Up",
+          "type": "number",
+          "x-since": 1,
+          "x-unit": "s"
+        },
+        "last_corr": {
+          "description": "Clock correction applied at the last NTP sync.",
+          "title": "Last Corr",
+          "type": "number",
+          "x-since": 1,
+          "x-unit": "s"
+        }
+      },
+      "required": [
+        "last_up",
+        "last_corr"
+      ],
+      "title": "TeleNtp",
+      "type": "object"
+    },
+    "TeleSd": {
+      "properties": {
+        "state": {
+          "enum": [
+            "DISCONNECTED",
+            "CONNECTED",
+            "DEGRADED"
+          ],
+          "title": "State",
+          "type": "string",
+          "x-since": 1
+        }
+      },
+      "required": [
+        "state"
+      ],
+      "title": "TeleSd",
+      "type": "object"
+    },
+    "TeleSys": {
+      "properties": {
+        "mem_free": {
+          "minimum": 0,
+          "title": "Mem Free",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "B"
+        },
+        "cpu_temp": {
+          "title": "Cpu Temp",
+          "type": "number",
+          "x-since": 1,
+          "x-unit": "°C"
+        },
+        "vsys": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "null if not measurable on this board.",
+          "title": "Vsys",
+          "x-since": 1,
+          "x-unit": "V"
+        }
+      },
+      "required": [
+        "mem_free",
+        "cpu_temp",
+        "vsys"
+      ],
+      "title": "TeleSys",
+      "type": "object"
+    },
+    "TeleWlan": {
+      "properties": {
+        "rssi": {
+          "title": "Rssi",
+          "type": "integer",
+          "x-since": 1,
+          "x-unit": "dBm"
+        },
+        "ssid": {
+          "title": "Ssid",
+          "type": "string",
+          "x-since": 1
+        }
+      },
+      "required": [
+        "rssi",
+        "ssid"
+      ],
+      "title": "TeleWlan",
+      "type": "object"
+    }
+  },
+  "description": "Periodic health snapshot (~60 s).",
+  "properties": {
+    "v": {
+      "description": "Version of the schema. Increased only on breaking changes.",
+      "maximum": 1,
+      "minimum": 1,
+      "title": "V",
+      "type": "integer",
+      "x-since": 1
+    },
+    "k": {
+      "const": "tele",
+      "title": "K",
+      "type": "string",
+      "x-since": 1
+    },
+    "dev": {
+      "description": "Hardware ID of the microcontroller",
+      "pattern": "^[0-9a-f]{16}$",
+      "title": "Dev",
+      "type": "string",
+      "x-since": 1
+    },
+    "fw": {
+      "description": "Firmware version (optionally containing the git commit hash)",
+      "pattern": "^(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)(?:-(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(?:\\+[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*)?$",
+      "title": "Fw",
+      "type": "string",
+      "x-since": 1
+    },
+    "boot": {
+      "description": "Boot counter, stored on flash memory of the microcontroller.",
+      "minimum": 0,
+      "title": "Boot",
+      "type": "integer",
+      "x-since": 1
+    },
+    "seq": {
+      "description": "Sequence number per boot. (dev, boot, seq) is the unique key for dedup (QoS 1, SD replay) and gap detection.",
+      "minimum": 0,
+      "title": "Seq",
+      "type": "integer",
+      "x-since": 1
+    },
+    "up": {
+      "description": "Monotonic seconds since boot, ms resolution. Time of measurement/event, not of sending. Use for intervals: ts may jump on re-sync.",
+      "minimum": 0.0,
+      "title": "Up",
+      "type": "number",
+      "x-since": 1,
+      "x-unit": "s"
+    },
+    "ts": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Unix seconds UTC after NTP sync, captured together with up. null while unsynced; key is mandatory.",
+      "title": "Ts",
+      "x-since": 1,
+      "x-unit": "s"
+    },
+    "sys": {
+      "$ref": "#/$defs/TeleSys",
+      "x-since": 1
+    },
+    "wlan": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TeleWlan"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "null while not associated with an access point.",
+      "x-since": 1
+    },
+    "mqtt": {
+      "$ref": "#/$defs/TeleMqtt",
+      "x-since": 1
+    },
+    "sd": {
+      "$ref": "#/$defs/TeleSd",
+      "x-since": 1
+    },
+    "buf": {
+      "$ref": "#/$defs/TeleBuf",
+      "x-since": 1
+    },
+    "ntp": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TeleNtp"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "null until the first successful NTP sync of this boot.",
+      "x-since": 1
+    }
+  },
+  "required": [
+    "v",
+    "k",
+    "dev",
+    "fw",
+    "boot",
+    "seq",
+    "up",
+    "ts",
+    "sys",
+    "wlan",
+    "mqtt",
+    "sd",
+    "buf",
+    "ntp"
+  ],
+  "title": "TeleRecord",
+  "type": "object"
+}
