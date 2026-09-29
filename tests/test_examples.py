@@ -17,12 +17,29 @@ from jsonschema import Draft202012Validator
 from pydantic import ValidationError
 
 from datenspec.codegen import schemas
-from datenspec.models import parse_record, validate_record
+from datenspec.models import (
+    LAPTOP_KINDS,
+    parse_laptop_message,
+    parse_record,
+    validate_laptop_message,
+    validate_record,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = REPO_ROOT / "examples"
 KINDS = [name for name in schemas.TARGETS if name != "header"]
 CASE_KEYS = {"case", "loc", "record", "strict_only"}
+
+
+def _parse(kind: str, line: str, *, forbid_extra: bool = False) -> Any:
+    # Pico records and laptop messages are separate unions; the file name says which.
+    parse = parse_laptop_message if kind in LAPTOP_KINDS else parse_record
+    return parse(line, forbid_extra=forbid_extra)
+
+
+def _validate(kind: str, obj: Any, *, forbid_extra: bool = False) -> Any:
+    validate = validate_laptop_message if kind in LAPTOP_KINDS else validate_record
+    return validate(obj, forbid_extra=forbid_extra)
 
 
 def _lines(folder: str) -> list[Any]:
@@ -53,7 +70,7 @@ def test_every_kind_has_examples(folder: str) -> None:
 
 @pytest.mark.parametrize(("kind", "line"), _lines("valid"))
 def test_valid_example_passes_models(kind: str, line: str) -> None:
-    record = parse_record(line, forbid_extra=True)
+    record = _parse(kind, line, forbid_extra=True)
     assert record.kind == kind, "example is in the wrong file"
 
 
@@ -62,13 +79,14 @@ def test_valid_example_passes_json_schemas(kind: str, line: str) -> None:
     # Guards the export: a consumer using only the .schema.json files must agree.
     wire = json.loads(line)
     _schema(kind).validate(wire)
-    _schema("header").validate(wire)
+    if kind not in LAPTOP_KINDS:
+        _schema("header").validate(wire)
 
 
 @pytest.mark.parametrize(("kind", "line"), _lines("valid"))
 def test_valid_example_round_trips(kind: str, line: str) -> None:
     # Serialising must reproduce the wire names; defaults are not written back.
-    record = parse_record(line)
+    record = _parse(kind, line)
     assert json.loads(record.model_dump_json(exclude_unset=True)) == json.loads(line)
 
 
@@ -79,7 +97,7 @@ def test_invalid_example_is_rejected_at_its_loc(kind: str, line: str) -> None:
     expected = tuple(case["loc"])
 
     with pytest.raises(ValidationError) as exc_info:
-        validate_record(case["record"], forbid_extra=True)
+        _validate(kind, case["record"], forbid_extra=True)
 
     locs = [tuple(e["loc"]) for e in exc_info.value.errors()]
     stray = [loc for loc in locs if loc[: len(expected)] != expected]
@@ -90,4 +108,4 @@ def test_invalid_example_is_rejected_at_its_loc(kind: str, line: str) -> None:
 def test_strict_only_example_is_accepted_at_runtime(kind: str, line: str) -> None:
     case = json.loads(line)
     # Runtime must tolerate unknown fields so older readers survive newer firmware.
-    validate_record(case["record"])
+    _validate(kind, case["record"])

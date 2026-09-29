@@ -6,7 +6,10 @@ validating dicts, and the Pico generator only needs the values (typing.get_args)
 
 from typing import Literal
 
-RecordKind = Literal["data", "alert", "tele", "err", "info"]
+# Sent by the Pico, with the full record header.
+RecordKind = Literal["data", "alert", "tele", "err", "info", "log", "run", "ack"]
+# Sent by the laptop, with only v and k.
+LaptopKind = Literal["cmd", "session", "annotation"]
 
 LedId = Literal["nir", "blue", "vis"]
 Illumination = Literal["dark", "nir", "blue", "vis"]
@@ -16,6 +19,16 @@ AlarmSeverity = Literal["warn", "crit"]
 AlertState = Literal["raised", "cleared"]
 
 ModuleState = Literal["DISCONNECTED", "CONNECTED", "DEGRADED"]
+
+# warn as in AlarmSeverity.
+LogLevel = Literal["debug", "info", "warn", "error"]
+
+RunEvent = Literal["start", "end"]
+# No "aborted": only the pipeline sets that, when no end record arrives.
+RunEndReason = Literal["duration", "manual", "error"]
+
+CmdAction = Literal["start", "stop"]
+AckResult = Literal["ok", "rejected", "error"]
 
 # Wire keys of the TCS3448 spectral channels (not SMUX slots).
 TcsChannel = Literal[

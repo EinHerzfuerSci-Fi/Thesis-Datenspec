@@ -12,15 +12,28 @@ from typing import Any, get_args
 
 from pydantic import BaseModel
 
-from datenspec.models import RECORD_MODELS, SCHEMA_VERSION, LedDuty, RecordHeader, TcsRaw
+from datenspec.models import (
+    LAPTOP_MODELS,
+    RECORD_MODELS,
+    SCHEMA_VERSION,
+    LedDuty,
+    RecordHeader,
+    TcsRaw,
+)
 from datenspec.models.vocab import (
+    AckResult,
     AlarmId,
     AlarmSeverity,
     AlertState,
+    CmdAction,
     Illumination,
+    LaptopKind,
     LedId,
+    LogLevel,
     ModuleState,
     RecordKind,
+    RunEndReason,
+    RunEvent,
     StatusPayload,
     TcsChannel,
 )
@@ -32,6 +45,7 @@ OUTPUT = "pico/datenspec_const.py"
 # e.g. "nir" is an LED (LED_NIR), a channel (CH_NIR) and an illumination (ILL_NIR).
 VALUE_SETS: tuple[tuple[str, str, Any], ...] = (
     ("K_", "record kinds (k)", RecordKind),
+    ("K_", "laptop message kinds (k); cmd is received by the device", LaptopKind),
     ("ILL_", "illumination (ill)", Illumination),
     ("LED_", "LED IDs; also the keys of led", LedId),
     ("CH_", "TCS3448 channels; also the keys of raw", TcsChannel),
@@ -40,6 +54,11 @@ VALUE_SETS: tuple[tuple[str, str, Any], ...] = (
     ("ALERT_", "alert state (state)", AlertState),
     ("STATE_", "module state (mqtt.state, sd.state, err.state)", ModuleState),
     ("STATUS_", "status topic payload (plain text)", StatusPayload),
+    ("LVL_", "log level (lvl)", LogLevel),
+    ("EV_", "run event (ev)", RunEvent),
+    ("END_", "run end reason (reason)", RunEndReason),
+    ("ACT_", "command action (act)", CmdAction),
+    ("RES_", "ack result (res)", AckResult),
 )
 
 # Their keys are exactly LED IDs / channel names, already emitted as LED_* / CH_*.
@@ -108,7 +127,7 @@ def _const(name: str, value: object, comment: str | None = None) -> str:
 
 def render() -> str:
     _check_keyed_models()
-    models = _walk((RecordHeader, *RECORD_MODELS))
+    models = _walk((RecordHeader, *RECORD_MODELS, *LAPTOP_MODELS))
     units = _units_by_name(models)
 
     out = [
@@ -117,9 +136,10 @@ def render() -> str:
         "",
         _const("SCHEMA_VERSION", SCHEMA_VERSION),
         "",
-        "# Topics: fill with .format(device_name=..., alarm_id=...).",
+        "# Topics: fill with .format(device_id=..., alarm_id=...).",
     ]
-    for topic in TOPICS:
+    # Laptop-to-pipeline topics would only cost RAM on the device.
+    for topic in (t for t in TOPICS if "pico" in {t.sender, t.receiver}):
         suffix = topic.name.upper()
         out.append(_const(f"T_{suffix}", topic.template))
         out.append(_const(f"QOS_{suffix}", topic.qos))

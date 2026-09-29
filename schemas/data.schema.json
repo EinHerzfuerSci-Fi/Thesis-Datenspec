@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "x-schema-version": 1,
+  "x-schema-version": 2,
   "$defs": {
     "Dht22": {
       "description": "Temperature and humidity; null as a whole if the sensor does not respond.",
@@ -90,6 +90,8 @@
         "ds18b20": {
           "anyOf": [
             {
+              "maxProperties": 1,
+              "minProperties": 1,
               "patternProperties": {
                 "^[0-9a-f]{16}$": {
                   "anyOf": [
@@ -110,7 +112,7 @@
               "type": "null"
             }
           ],
-          "description": "Temperature per ROM ID; null if the bus does not respond. Firmware should send a failed sensor as null; 85.0 (power-on default) is accepted but flagged as suspect.",
+          "description": "Temperature keyed by ROM ID. Each device has exactly one DS18B20, so the map holds exactly this one key (info.ds18b20.rom). null if the bus does not respond. Firmware should send a failed conversion as null value; 85.0 (power-on default) is accepted but flagged as suspect.",
           "title": "Ds18B20",
           "x-since": 1,
           "x-unit": "°C"
@@ -463,8 +465,8 @@
   "properties": {
     "v": {
       "description": "Version of the schema. Increased only on breaking changes.",
-      "maximum": 1,
-      "minimum": 1,
+      "maximum": 2,
+      "minimum": 2,
       "title": "V",
       "type": "integer",
       "x-since": 1
@@ -496,8 +498,15 @@
       "type": "integer",
       "x-since": 1
     },
+    "run": {
+      "description": "ID of the run this cycle belongs to; data exists only within a run.",
+      "minimum": 0,
+      "title": "Run",
+      "type": "integer",
+      "x-since": 2
+    },
     "seq": {
-      "description": "Sequence number per boot. (dev, boot, seq) is the unique key for dedup (QoS 1, SD replay) and gap detection.",
+      "description": "Sequence number per record kind, for dedup (QoS 1, SD replay) and gap detection per kind. For data it counts per run and restarts at 0 with every run; for all other kinds it counts per boot. Unique key: (dev, run, seq) for data, (dev, boot, k, seq) for all other kinds.",
       "minimum": 0,
       "title": "Seq",
       "type": "integer",
@@ -537,6 +546,7 @@
     "dev",
     "fw",
     "boot",
+    "run",
     "seq",
     "up",
     "ts",

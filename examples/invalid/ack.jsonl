@@ -1,0 +1,4 @@
+{"case":"unknown result","loc":["ack","res"],"record":{"v":2,"k":"ack","dev":"e6614104032b5a2c","fw":"0.4.1+17b375f","boot":3,"run":7,"seq":0,"up":59.98,"ts":1759140059,"cmd_id":"3f2b8c1e-6d4a-4e2f-9b1a-7c5d0e8f2a91","res":"accepted","msg":null}}
+{"case":"cmd_id in upper case","loc":["ack","cmd_id"],"record":{"v":2,"k":"ack","dev":"e6614104032b5a2c","fw":"0.4.1+17b375f","boot":3,"run":7,"seq":0,"up":59.98,"ts":1759140059,"cmd_id":"3F2B8C1E-6D4A-4E2F-9B1A-7C5D0E8F2A91","res":"ok","msg":null}}
+{"case":"msg key missing instead of null","loc":["ack","msg"],"record":{"v":2,"k":"ack","dev":"e6614104032b5a2c","fw":"0.4.1+17b375f","boot":3,"run":7,"seq":0,"up":59.98,"ts":1759140059,"cmd_id":"3f2b8c1e-6d4a-4e2f-9b1a-7c5d0e8f2a91","res":"ok"}}
+{"case":"cmd_id null","loc":["ack","cmd_id"],"record":{"v":2,"k":"ack","dev":"e6614104032b5a2c","fw":"0.4.1+17b375f","boot":3,"run":7,"seq":0,"up":59.98,"ts":1759140059,"cmd_id":null,"res":"ok","msg":null}}

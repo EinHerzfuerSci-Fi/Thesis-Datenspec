@@ -2,7 +2,9 @@
 Remove duplicate records.
 
 Duplicates are expected: QoS 1 may deliver a message twice, and SD replay resends
-records that already went out over MQTT. (dev, boot, seq) identifies a record.
+records that already went out over MQTT. seq counts per kind: per run for data, per boot
+for everything else, so a record is identified by (dev, run, seq) for data and by
+(dev, boot, k, seq) otherwise.
 """
 
 from collections.abc import Iterable
@@ -10,11 +12,13 @@ from dataclasses import dataclass, field
 
 from datenspec.models import Record
 
-type RecordKey = tuple[str, int, int]
+type RecordKey = tuple[str, str, int, int]
+"""(dev, k, scope, seq), scope being run for data and boot for all other kinds."""
 
 
 def record_key(record: Record) -> RecordKey:
-    return (record.device_id, record.boot, record.seq)
+    scope = record.run if record.kind == "data" else record.boot
+    return (record.device_id, record.kind, scope, record.seq)
 
 
 @dataclass(frozen=True)

@@ -2,7 +2,7 @@ from typing import Annotated, Literal, Self
 
 from pydantic import Field, model_validator
 
-from ._base import Fraction, HexId16, SpecModel, Uint16, meta
+from ._base import Count, Fraction, HexId16, SpecModel, Uint16, meta
 from .header import RecordHeader
 from .vocab import Illumination
 
@@ -132,10 +132,14 @@ class Measurements(SpecModel):
     optional (default null).
     """
 
-    ds18b20: dict[HexId16, Ds18b20Temp | None] | None = Field(
-        description="Temperature per ROM ID; null if the bus does not respond. "
-        "Firmware should send a failed sensor as null; 85.0 (power-on default) is "
-        "accepted but flagged as suspect.",
+    ds18b20: (
+        Annotated[dict[HexId16, Ds18b20Temp | None], Field(min_length=1, max_length=1)]
+        | None
+    ) = Field(
+        description="Temperature keyed by ROM ID. Each device has exactly one DS18B20, "
+        "so the map holds exactly this one key (info.ds18b20.rom). null if the bus "
+        "does not respond. Firmware should send a failed conversion as null value; "
+        "85.0 (power-on default) is accepted but flagged as suspect.",
         json_schema_extra=meta(unit="°C"),
     )
     dht22: Dht22 | None = Field(json_schema_extra=meta())
@@ -164,4 +168,8 @@ class DataRecord(RecordHeader):
     """One measurement cycle."""
 
     kind: Literal["data"] = Field(alias="k", json_schema_extra=meta())
+    run: Count = Field(
+        description="ID of the run this cycle belongs to; data exists only within a run.",
+        json_schema_extra=meta(since=2),
+    )
     measurements: Measurements = Field(alias="m", json_schema_extra=meta())

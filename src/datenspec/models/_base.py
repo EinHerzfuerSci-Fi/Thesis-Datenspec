@@ -4,10 +4,16 @@ from typing import Annotated, Any
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, model_validator
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 """
 Wire-format version, sent as `v` in every record. Bumped only on breaking changes;
 the package itself is versioned separately with SemVer.
+"""
+
+MIN_SCHEMA_VERSION = 2
+"""
+Oldest version the models accept. v1 was never deployed (no device or SD card wrote
+it), so its readers were dropped instead of kept alongside v2.
 """
 
 FORBID_EXTRA = "forbid_extra"
@@ -48,6 +54,12 @@ class SpecModel(BaseModel):
 
 HexId16 = Annotated[str, Field(pattern=r"^[0-9a-f]{16}$")]
 """64-bit ID as 16 lowercase hex chars (machine.unique_id(), DS18B20 ROM)."""
+
+UUID_PATTERN = r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+
+Uuid = Annotated[str, Field(pattern=UUID_PATTERN)]
+"""UUID in canonical lowercase form, e.g. str(uuid.uuid4()). str, not uuid.UUID: strict
+mode would reject plain strings when validating dicts."""
 
 Fraction = Annotated[float, Field(ge=0.0, le=1.0)]
 Count = Annotated[int, Field(ge=0)]

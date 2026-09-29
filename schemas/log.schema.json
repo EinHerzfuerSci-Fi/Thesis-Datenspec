@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-schema-version": 2,
+  "description": "Firmware log message. Separate from err: err reports module failures with a code,\nlog is the general diagnostic stream.",
+  "properties": {
+    "v": {
+      "description": "Version of the schema. Increased only on breaking changes.",
+      "maximum": 2,
+      "minimum": 2,
+      "title": "V",
+      "type": "integer",
+      "x-since": 1
+    },
+    "k": {
+      "const": "log",
+      "title": "K",
+      "type": "string",
+      "x-since": 2
+    },
+    "dev": {
+      "description": "Hardware ID of the microcontroller",
+      "pattern": "^[0-9a-f]{16}$",
+      "title": "Dev",
+      "type": "string",
+      "x-since": 1
+    },
+    "fw": {
+      "description": "Firmware version (optionally containing the git commit hash)",
+      "pattern": "^(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)(?:-(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(?:\\+[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*)?$",
+      "title": "Fw",
+      "type": "string",
+      "x-since": 1
+    },
+    "boot": {
+      "description": "Boot counter, stored on flash memory of the microcontroller.",
+      "minimum": 0,
+      "title": "Boot",
+      "type": "integer",
+      "x-since": 1
+    },
+    "run": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "ID of the run (measurement series) this record belongs to; null outside a run. Unique per device: a counter stored on flash like boot, incremented and written before the run's start record, so a power loss can skip an ID but never reuse one. (dev, run) identifies a run.",
+      "title": "Run",
+      "x-since": 2
+    },
+    "seq": {
+      "description": "Sequence number per record kind, for dedup (QoS 1, SD replay) and gap detection per kind. For data it counts per run and restarts at 0 with every run; for all other kinds it counts per boot. Unique key: (dev, run, seq) for data, (dev, boot, k, seq) for all other kinds.",
+      "minimum": 0,
+      "title": "Seq",
+      "type": "integer",
+      "x-since": 1
+    },
+    "up": {
+      "description": "Monotonic seconds since boot, ms resolution. Time of measurement/event, not of sending. Use for intervals: ts may jump on re-sync.",
+      "minimum": 0.0,
+      "title": "Up",
+      "type": "number",
+      "x-since": 1,
+      "x-unit": "s"
+    },
+    "ts": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Unix seconds UTC after NTP sync, captured together with up. null while unsynced; key is mandatory.",
+      "title": "Ts",
+      "x-since": 1,
+      "x-unit": "s"
+    },
+    "lvl": {
+      "description": "Log level.",
+      "enum": [
+        "debug",
+        "info",
+        "warn",
+        "error"
+      ],
+      "title": "Lvl",
+      "type": "string",
+      "x-since": 2
+    },
+    "module": {
+      "description": "Module of the firmware the message originates from.",
+      "title": "Module",
+      "type": "string",
+      "x-since": 2
+    },
+    "msg": {
+      "description": "Human-readable message.",
+      "title": "Msg",
+      "type": "string",
+      "x-since": 2
+    },
+    "ctx": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Structured context as key/value pairs; not validated.",
+      "title": "Ctx",
+      "x-since": 2
+    }
+  },
+  "required": [
+    "v",
+    "k",
+    "dev",
+    "fw",
+    "boot",
+    "run",
+    "seq",
+    "up",
+    "ts",
+    "lvl",
+    "module",
+    "msg"
+  ],
+  "title": "LogRecord",
+  "type": "object"
+}

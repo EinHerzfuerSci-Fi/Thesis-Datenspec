@@ -9,10 +9,11 @@ import pytest
 from datenspec.models import FORBID_EXTRA, Record, TcsCapture, validate_record
 
 HEADER: dict[str, Any] = {
-    "v": 1,
+    "v": 2,
     "dev": "e6614104032b5a2c",
     "fw": "0.4.1+17b375f",
     "boot": 3,
+    "run": 7,
     "seq": 0,
     "up": 10.0,
     "ts": None,
@@ -85,7 +86,7 @@ BODIES: dict[str, dict[str, Any]] = {
             "sample_interval_ms": 10000,
         },
         "sensors": {"ds18b20": True, "dht22": True, "tcs3448": True},
-        "ds18b20": {"resolution_bits": 12},
+        "ds18b20": {"resolution_bits": 12, "rom": "28ff641e8016043c"},
         "tcs3448": {"smux_mode": 18, "agc": False},
         "leds": [
             {"id": "nir", "peak_nm": 850, "pin": 2},
@@ -96,6 +97,13 @@ BODIES: dict[str, dict[str, Any]] = {
         "pio": {"hz": 1_000_000, "prog": "1.0"},
         "pwm": {"hz": 20_000, "sync": True},
         "sd": {"total": 32_000_000_000, "free": 31_000_000_000},
+    },
+    "log": {"lvl": "info", "module": "main", "msg": "boot complete"},
+    "run": {"ev": "start", "dur": 3600, "session": None, "cmd_id": None},
+    "ack": {
+        "cmd_id": "3f2b8c1e-6d4a-4e2f-9b1a-7c5d0e8f2a91",
+        "res": "ok",
+        "msg": None,
     },
 }
 

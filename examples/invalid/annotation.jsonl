@@ -1,0 +1,6 @@
+{"case":"run without dev","loc":["annotation"],"record":{"v":2,"k":"annotation","id":"9a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d","ts":1759141200,"text":"chamber door opened","dev":null,"run":7,"session":"a0c4e7b2-1f3d-4c8e-8a6b-2d9f5e1c3b70"}}
+{"case":"dev in upper case","loc":["annotation","dev"],"record":{"v":2,"k":"annotation","id":"9a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d","ts":1759141200,"text":"chamber door opened","dev":"E6614104032B5A2C","run":7,"session":"a0c4e7b2-1f3d-4c8e-8a6b-2d9f5e1c3b70"}}
+{"case":"text missing","loc":["annotation","text"],"record":{"v":2,"k":"annotation","id":"9a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d","ts":1759141200,"dev":"e6614104032b5a2c","run":7,"session":"a0c4e7b2-1f3d-4c8e-8a6b-2d9f5e1c3b70"}}
+{"case":"session key missing instead of null","loc":["annotation","session"],"record":{"v":2,"k":"annotation","id":"9a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d","ts":1759141200,"text":"chamber door opened","dev":"e6614104032b5a2c","run":7}}
+{"case":"id missing","loc":["annotation","id"],"record":{"v":2,"k":"annotation","ts":1759141200,"text":"chamber door opened","dev":"e6614104032b5a2c","run":7,"session":null}}
+{"case":"id not a UUID","loc":["annotation","id"],"record":{"v":2,"k":"annotation","id":"note-1","ts":1759141200,"text":"chamber door opened","dev":"e6614104032b5a2c","run":7,"session":null}}

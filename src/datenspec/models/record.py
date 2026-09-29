@@ -3,18 +3,49 @@ from typing import Annotated, Any
 from pydantic import Field, TypeAdapter
 
 from ._base import FORBID_EXTRA
+from .ack import AckRecord
 from .alert import AlertRecord
 from .data import DataRecord
 from .err import ErrRecord
 from .info import InfoRecord
+from .log import LogRecord
+from .run import RunEndRecord, RunRecord, RunStartRecord
 from .tele import TeleRecord
 
 Record = Annotated[
-    DataRecord | AlertRecord | TeleRecord | ErrRecord | InfoRecord,
+    DataRecord
+    | AlertRecord
+    | TeleRecord
+    | ErrRecord
+    | InfoRecord
+    | LogRecord
+    | RunRecord
+    | AckRecord,
     Field(discriminator="kind"),
 ]
 
-RECORD_MODELS = (DataRecord, AlertRecord, TeleRecord, ErrRecord, InfoRecord)
+RECORD_MODELS = (
+    DataRecord,
+    AlertRecord,
+    TeleRecord,
+    ErrRecord,
+    InfoRecord,
+    LogRecord,
+    RunStartRecord,
+    RunEndRecord,
+    AckRecord,
+)
+RECORD_KINDS: dict[str, Any] = {
+    "data": DataRecord,
+    "alert": AlertRecord,
+    "tele": TeleRecord,
+    "err": ErrRecord,
+    "info": InfoRecord,
+    "log": LogRecord,
+    "run": RunRecord,
+    "ack": AckRecord,
+}
+"""Schema target per k; a kind with variants maps to its discriminated union."""
 
 record_adapter: TypeAdapter[Record] = TypeAdapter(Record)
 

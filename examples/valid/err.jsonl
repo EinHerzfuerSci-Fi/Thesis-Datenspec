@@ -1,2 +1,2 @@
-{"v":1,"k":"err","dev":"e6614104032b5a2c","fw":"0.4.1+17b375f","boot":3,"seq":21,"up":210.3,"ts":1759140210,"module":"storage","reason":"write failed","code":5,"state":"DEGRADED"}
-{"v":1,"k":"err","dev":"e6614104032b5a2c","fw":"0.4.1+17b375f","boot":3,"seq":22,"up":211.0,"ts":1759140211,"module":"tcs3448","reason":"i2c timeout","code":110}
+{"v":2,"k":"err","dev":"e6614104032b5a2c","fw":"0.4.1+17b375f","boot":3,"run":null,"seq":0,"up":210.3,"ts":1759140210,"module":"storage","reason":"write failed","code":5,"state":"DEGRADED"}
+{"v":2,"k":"err","dev":"e6614104032b5a2c","fw":"0.4.1+17b375f","boot":3,"run":7,"seq":1,"up":211.0,"ts":1759140211,"module":"tcs3448","reason":"i2c timeout","code":110}

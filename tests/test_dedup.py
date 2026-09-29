@@ -1,9 +1,14 @@
 from datenspec.dedup import deduplicate, record_key
 
 
-def test_key_is_dev_boot_seq(make_record) -> None:
-    r = make_record(seq=7, boot=2)
-    assert record_key(r) == ("e6614104032b5a2c", 2, 7)
+def test_data_key_is_dev_run_seq(make_record) -> None:
+    r = make_record("data", run=4, seq=7, boot=2)
+    assert record_key(r) == ("e6614104032b5a2c", "data", 4, 7)
+
+
+def test_other_kinds_key_is_dev_boot_kind_seq(make_record) -> None:
+    r = make_record("tele", run=4, seq=7, boot=2)
+    assert record_key(r) == ("e6614104032b5a2c", "tele", 2, 7)
 
 
 def test_identical_resend_is_dropped_silently(make_record) -> None:
@@ -26,16 +31,21 @@ def test_first_occurrence_wins_and_conflict_is_reported(make_record) -> None:
 
 def test_same_seq_in_other_boot_or_device_is_kept(make_record) -> None:
     records = [
-        make_record(seq=1),
-        make_record(seq=1, boot=4),
-        make_record(seq=1, dev="0000000000000001"),
+        make_record("tele", seq=1),
+        make_record("tele", seq=1, boot=4),
+        make_record("tele", seq=1, dev="0000000000000001"),
     ]
     assert deduplicate(records).records == records
 
 
-def test_dedup_spans_record_kinds(make_record) -> None:
-    # seq is per boot, not per kind, so a tele with a data record's key is a conflict.
-    data, tele = make_record("data", seq=5), make_record("tele", seq=5)
-    result = deduplicate([data, tele])
-    assert result.records == [data]
-    assert len(result.conflicts) == 1
+def test_data_seq_restarts_per_run(make_record) -> None:
+    records = [make_record("data", run=7, seq=0), make_record("data", run=8, seq=0)]
+    assert deduplicate(records).records == records
+
+
+def test_same_seq_in_other_kind_is_kept(make_record) -> None:
+    # seq counts per kind, so equal numbers across kinds are distinct records.
+    records = [make_record("data", seq=5), make_record("tele", seq=5)]
+    result = deduplicate(records)
+    assert result.records == records
+    assert result.conflicts == []

@@ -9,7 +9,8 @@ import json
 from collections.abc import Iterator
 from typing import Any
 
-from datenspec.models._base import SEMVER_PATTERN
+from datenspec.models import LAPTOP_KINDS, RECORD_KINDS, RecordHeader
+from datenspec.models._base import SEMVER_PATTERN, UUID_PATTERN
 from datenspec.topics import TOPICS
 
 from . import schemas
@@ -64,11 +65,10 @@ def _type(node: Schema) -> str:
             else f"map `{pattern}` → {inner}"
         )
     if kind == "string" and "pattern" in node:
-        return (
-            "string (SemVer)"
-            if node["pattern"] == SEMVER_PATTERN
-            else (f"string `{node['pattern']}`")
-        )
+        named = {SEMVER_PATTERN: "SemVer", UUID_PATTERN: "UUID"}
+        if node["pattern"] in named:
+            return f"string ({named[node['pattern']]})"
+        return f"string `{node['pattern']}`"
     return kind + _range(node)
 
 
@@ -82,10 +82,12 @@ def _nested(node: Schema, defs: Schema) -> tuple[Schema, str] | None:
     return None
 
 
-def _rows(model: Schema, defs: Schema, prefix: str, skip: set[str]) -> Iterator[str]:
+def _rows(model: Schema, defs: Schema, prefix: str, skip: Schema) -> Iterator[str]:
+    """skip: properties not to list, e.g. the header's; only skipped where identical."""
     required = set(model.get("required", []))
     for name, prop in model["properties"].items():
-        if name in skip:
+        # In a kind's table k is const and already in the section title.
+        if (skip and name == "k") or skip.get(name) == prop:
             continue
         nested = _nested(prop, defs)
         description = prop.get("description") or (
@@ -106,7 +108,7 @@ def _rows(model: Schema, defs: Schema, prefix: str, skip: set[str]) -> Iterator[
             + " |"
         )
         if nested:
-            yield from _rows(nested[0], defs, f"{prefix}{name}{nested[1]}", set())
+            yield from _rows(nested[0], defs, f"{prefix}{name}{nested[1]}", {})
 
 
 HEAD = (
@@ -115,29 +117,54 @@ HEAD = (
 )
 
 
+def _kind_section(name: str, target: Any, skip: Schema, sender: str) -> list[str]:
+    schema = schemas.json_schema(target)
+    defs = schema.get("$defs", {})
+    out = ["", f'### `{name}` (`"k": "{name}"`, {sender})']
+    if "oneOf" not in schema:
+        return [*out, "", HEAD, *_rows(schema, defs, "", skip)]
+    # Discriminated union: one table per variant, headed by its discriminator value.
+    key = schema["discriminator"]["propertyName"]
+    for option in schema["oneOf"]:
+        variant = _resolve(option, defs)
+        value = variant["properties"][key]["const"]
+        out += ["", f'#### `"{key}": "{value}"`', ""]
+        if description := variant.get("description"):
+            out += [_cell(description), ""]
+        out += [HEAD, *_rows(variant, defs, "", skip)]
+    return out
+
+
 def _field_tables() -> list[str]:
-    header = schemas.TARGETS["header"].model_json_schema(by_alias=True)
-    header_fields = set(header["properties"])
-    out = ["### Header (every record)", "", HEAD]
-    out += _rows(header, header.get("$defs", {}), "", set())
-    for name, model in schemas.TARGETS.items():
-        if name == "header":
-            continue
-        schema = model.model_json_schema(by_alias=True)
-        out += ["", f'### `{name}` (`"k": "{name}"`)', "", HEAD]
-        out += _rows(schema, schema.get("$defs", {}), "", header_fields)
+    header = schemas.json_schema(RecordHeader)
+    out = ["### Header (every record from the Pico)", "", HEAD]
+    out += _rows(header, header.get("$defs", {}), "", {})
+    for name, target in RECORD_KINDS.items():
+        out += _kind_section(name, target, header["properties"], "from the Pico")
+    out += [
+        "",
+        "### Messages from the laptop",
+        "",
+        (
+            "They carry only `v` and `k` as header, no `dev`, `boot` or `up`. `v` is as "
+            "in the Pico header."
+        ),
+    ]
+    version = {"v": header["properties"]["v"]}
+    for name, target in LAPTOP_KINDS.items():
+        out += _kind_section(name, target, version, "from the laptop")
     return out
 
 
 def _topic_table() -> list[str]:
     out = [
-        "| Topic | QoS | Retain | Payload | Description |",
-        "|---|---|---|---|---|",
+        "| Topic | From → to | QoS | Retain | Payload | Description |",
+        "|---|---|---|---|---|---|",
     ]
     for t in TOPICS:
-        payload = "text/plain" if t.name == "status" else f"`{t.name}` record"
+        payload = "text/plain" if t.payload == "status" else f"`{t.payload}`"
         out.append(
-            f"| `{t.template}` | {t.qos} | {'yes' if t.retain else 'no'} | {payload} "
+            f"| `{t.template}` | {t.sender} → {t.receiver} | {t.qos} | {'yes' if t.retain else 'no'} | {payload} "
             f"| {_cell(t.description)} |"
         )
     return out

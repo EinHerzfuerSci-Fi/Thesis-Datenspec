@@ -46,7 +46,8 @@ class AlertRecord(RecordHeader):
         alias="sev", description="Severity of the alarm.", json_schema_extra=meta()
     )
     ref_seq: Count = Field(
-        description="seq of the data record that triggered the transition.",
+        description="seq of the data record that triggered the transition, in the run "
+        "given by run: the record's key is (dev, run, ref_seq).",
         json_schema_extra=meta(),
     )
 

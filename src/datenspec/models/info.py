@@ -2,7 +2,7 @@ from typing import Annotated, Literal, Self
 
 from pydantic import Field, model_validator
 
-from ._base import Count, SpecModel, meta
+from ._base import Count, HexId16, SpecModel, meta
 from .header import RecordHeader
 from .vocab import Illumination, LedId
 
@@ -11,7 +11,7 @@ class SensorsFound(SpecModel):
     """Sensors detected at boot. Sensors added later are optional."""
 
     ds18b20: bool = Field(
-        description="At least one DS18B20 found on the bus.", json_schema_extra=meta()
+        description="The DS18B20 was found on the bus.", json_schema_extra=meta()
     )
     dht22: bool = Field(description="DHT22 responded.", json_schema_extra=meta())
     tcs3448: bool = Field(description="TCS3448 responded.", json_schema_extra=meta())
@@ -59,6 +59,11 @@ class InfoDs18b20(SpecModel):
 
     resolution_bits: Annotated[int, Field(ge=9, le=12)] = Field(
         description="Configured conversion resolution.", json_schema_extra=meta()
+    )
+    rom: HexId16 | None = Field(
+        description="ROM ID of the device's only DS18B20; also the key in data "
+        "m.ds18b20. null if none was found.",
+        json_schema_extra=meta(since=2),
     )
 
 
@@ -143,3 +148,11 @@ class InfoRecord(RecordHeader):
     sd: InfoSd | None = Field(
         description="null if no SD card is mounted.", json_schema_extra=meta()
     )
+
+    @model_validator(mode="after")
+    def _rom_iff_ds18b20_found(self) -> Self:
+        if self.sensors.ds18b20 != (self.ds18b20.rom is not None):
+            raise ValueError(
+                "ds18b20.rom must be set exactly when sensors.ds18b20 is true"
+            )
+        return self

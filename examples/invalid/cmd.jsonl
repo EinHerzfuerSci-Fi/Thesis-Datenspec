@@ -1,0 +1,6 @@
+{"case":"unknown action","loc":["cmd"],"record":{"v":2,"k":"cmd","id":"3f2b8c1e-6d4a-4e2f-9b1a-7c5d0e8f2a91","act":"pause","dur":3600,"session":"a0c4e7b2-1f3d-4c8e-8a6b-2d9f5e1c3b70","run":null,"ts":1759140059.412}}
+{"case":"stop without run","loc":["cmd","stop","run"],"record":{"v":2,"k":"cmd","id":"5e9d2a7c-8b1f-4d3e-a6c2-0f4b8e7d1a35","act":"stop","dur":null,"session":null,"run":null,"ts":1759143810.0}}
+{"case":"start with run","loc":["cmd","start","run"],"record":{"v":2,"k":"cmd","id":"3f2b8c1e-6d4a-4e2f-9b1a-7c5d0e8f2a91","act":"start","dur":3600,"session":"a0c4e7b2-1f3d-4c8e-8a6b-2d9f5e1c3b70","run":7,"ts":1759140059.412}}
+{"case":"stop with duration","loc":["cmd","stop","dur"],"record":{"v":2,"k":"cmd","id":"5e9d2a7c-8b1f-4d3e-a6c2-0f4b8e7d1a35","act":"stop","dur":60,"session":null,"run":8,"ts":1759143810.0}}
+{"case":"ts missing","loc":["cmd","start","ts"],"record":{"v":2,"k":"cmd","id":"3f2b8c1e-6d4a-4e2f-9b1a-7c5d0e8f2a91","act":"start","dur":3600,"session":"a0c4e7b2-1f3d-4c8e-8a6b-2d9f5e1c3b70","run":null}}
+{"case":"target device in payload instead of topic","loc":["cmd","start"],"record":{"v":2,"k":"cmd","id":"3f2b8c1e-6d4a-4e2f-9b1a-7c5d0e8f2a91","act":"start","dur":3600,"session":"a0c4e7b2-1f3d-4c8e-8a6b-2d9f5e1c3b70","run":null,"ts":1759140059.412,"dev":"e6614104032b5a2c"},"strict_only":true}

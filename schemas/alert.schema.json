@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "x-schema-version": 1,
+  "x-schema-version": 2,
   "dependentRequired": {
     "val": [
       "thr"
@@ -10,8 +10,8 @@
   "properties": {
     "v": {
       "description": "Version of the schema. Increased only on breaking changes.",
-      "maximum": 1,
-      "minimum": 1,
+      "maximum": 2,
+      "minimum": 2,
       "title": "V",
       "type": "integer",
       "x-since": 1
@@ -43,8 +43,22 @@
       "type": "integer",
       "x-since": 1
     },
+    "run": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "ID of the run (measurement series) this record belongs to; null outside a run. Unique per device: a counter stored on flash like boot, incremented and written before the run's start record, so a power loss can skip an ID but never reuse one. (dev, run) identifies a run.",
+      "title": "Run",
+      "x-since": 2
+    },
     "seq": {
-      "description": "Sequence number per boot. (dev, boot, seq) is the unique key for dedup (QoS 1, SD replay) and gap detection.",
+      "description": "Sequence number per record kind, for dedup (QoS 1, SD replay) and gap detection per kind. For data it counts per run and restarts at 0 with every run; for all other kinds it counts per boot. Unique key: (dev, run, seq) for data, (dev, boot, k, seq) for all other kinds.",
       "minimum": 0,
       "title": "Seq",
       "type": "integer",
@@ -139,7 +153,7 @@
       "x-since": 1
     },
     "ref_seq": {
-      "description": "seq of the data record that triggered the transition.",
+      "description": "seq of the data record that triggered the transition, in the run given by run: the record's key is (dev, run, ref_seq).",
       "minimum": 0,
       "title": "Ref Seq",
       "type": "integer",
@@ -152,6 +166,7 @@
     "dev",
     "fw",
     "boot",
+    "run",
     "seq",
     "up",
     "ts",

@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-schema-version": 2,
+  "$defs": {
+    "CmdStart": {
+      "description": "Start a run.",
+      "properties": {
+        "v": {
+          "description": "Version of the schema. Increased only on breaking changes.",
+          "maximum": 2,
+          "minimum": 2,
+          "title": "V",
+          "type": "integer",
+          "x-since": 1
+        },
+        "k": {
+          "const": "cmd",
+          "title": "K",
+          "type": "string",
+          "x-since": 2
+        },
+        "id": {
+          "description": "Command ID; echoed as cmd_id in ack and run.",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+          "title": "Id",
+          "type": "string",
+          "x-since": 2
+        },
+        "act": {
+          "const": "start",
+          "description": "Action to perform.",
+          "title": "Act",
+          "type": "string",
+          "x-since": 2
+        },
+        "dur": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Planned duration of the run; null = the device's configured default duration.",
+          "title": "Dur",
+          "x-since": 2,
+          "x-unit": "s"
+        },
+        "session": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Session the run belongs to; null if none.",
+          "title": "Session",
+          "x-since": 2
+        },
+        "run": {
+          "description": "Always null for start: the device assigns the run ID.",
+          "title": "Run",
+          "type": "null",
+          "x-since": 2
+        },
+        "ts": {
+          "description": "Send time on the laptop, Unix seconds UTC.",
+          "minimum": 0.0,
+          "title": "Ts",
+          "type": "number",
+          "x-since": 2,
+          "x-unit": "s"
+        }
+      },
+      "required": [
+        "v",
+        "k",
+        "id",
+        "act",
+        "dur",
+        "session",
+        "run",
+        "ts"
+      ],
+      "title": "CmdStart",
+      "type": "object"
+    },
+    "CmdStop": {
+      "description": "Stop a run. The device ignores it (ack rejected) unless run is its active run.",
+      "properties": {
+        "v": {
+          "description": "Version of the schema. Increased only on breaking changes.",
+          "maximum": 2,
+          "minimum": 2,
+          "title": "V",
+          "type": "integer",
+          "x-since": 1
+        },
+        "k": {
+          "const": "cmd",
+          "title": "K",
+          "type": "string",
+          "x-since": 2
+        },
+        "id": {
+          "description": "Command ID; echoed as cmd_id in ack and run.",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+          "title": "Id",
+          "type": "string",
+          "x-since": 2
+        },
+        "act": {
+          "const": "stop",
+          "description": "Action to perform.",
+          "title": "Act",
+          "type": "string",
+          "x-since": 2
+        },
+        "dur": {
+          "description": "Always null for stop.",
+          "title": "Dur",
+          "type": "null",
+          "x-since": 2
+        },
+        "session": {
+          "description": "Always null for stop.",
+          "title": "Session",
+          "type": "null",
+          "x-since": 2
+        },
+        "run": {
+          "description": "Run to stop.",
+          "minimum": 0,
+          "title": "Run",
+          "type": "integer",
+          "x-since": 2
+        },
+        "ts": {
+          "description": "Send time on the laptop, Unix seconds UTC.",
+          "minimum": 0.0,
+          "title": "Ts",
+          "type": "number",
+          "x-since": 2,
+          "x-unit": "s"
+        }
+      },
+      "required": [
+        "v",
+        "k",
+        "id",
+        "act",
+        "dur",
+        "session",
+        "run",
+        "ts"
+      ],
+      "title": "CmdStop",
+      "type": "object"
+    }
+  },
+  "discriminator": {
+    "mapping": {
+      "start": "#/$defs/CmdStart",
+      "stop": "#/$defs/CmdStop"
+    },
+    "propertyName": "act"
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/CmdStart"
+    },
+    {
+      "$ref": "#/$defs/CmdStop"
+    }
+  ]
+}
