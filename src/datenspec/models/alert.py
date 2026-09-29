@@ -17,8 +17,14 @@ class AlertRecord(RecordHeader):
     )
 
     kind: Literal["alert"] = Field(alias="k", json_schema_extra=meta())
-    id: AlarmId = Field(json_schema_extra=meta())
-    state: AlertState = Field(json_schema_extra=meta())
+    id: AlarmId = Field(
+        description="Alarm that changed state; also the last topic level.",
+        json_schema_extra=meta(),
+    )
+    state: AlertState = Field(
+        description="New state. Sent only on transitions, with hysteresis in firmware.",
+        json_schema_extra=meta(),
+    )
     source: str = Field(
         alias="src",
         description="Source of the alert.",
@@ -27,14 +33,18 @@ class AlertRecord(RecordHeader):
     value: float | None = Field(
         default=None,
         alias="val",
+        description="Value that triggered the transition, in the unit of the monitored quantity.",
         json_schema_extra=meta(),
     )
     threshold: float | None = Field(
         default=None,
         alias="thr",
+        description="Threshold that was crossed, same unit as val.",
         json_schema_extra=meta(),
     )
-    severity: AlarmSeverity = Field(alias="sev", json_schema_extra=meta())
+    severity: AlarmSeverity = Field(
+        alias="sev", description="Severity of the alarm.", json_schema_extra=meta()
+    )
     ref_seq: Count = Field(
         description="seq of the data record that triggered the transition.",
         json_schema_extra=meta(),

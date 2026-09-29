@@ -16,8 +16,14 @@ from .vocab import ModuleState
 
 
 class TeleSys(SpecModel):
-    mem_free: Count = Field(json_schema_extra=meta(unit="B"))
-    cpu_temp: float = Field(json_schema_extra=meta(unit="°C"))
+    """Microcontroller health."""
+
+    mem_free: Count = Field(
+        description="Free heap memory.", json_schema_extra=meta(unit="B")
+    )
+    cpu_temp: float = Field(
+        description="Chip temperature.", json_schema_extra=meta(unit="°C")
+    )
     vsys: float | None = Field(
         description="null if not measurable on this board.",
         json_schema_extra=meta(unit="V"),
@@ -25,22 +31,37 @@ class TeleSys(SpecModel):
 
 
 class TeleWlan(SpecModel):
-    rssi: int = Field(json_schema_extra=meta(unit="dBm"))
-    ssid: str = Field(json_schema_extra=meta())
+    rssi: int = Field(
+        description="Signal strength of the access point.",
+        json_schema_extra=meta(unit="dBm"),
+    )
+    ssid: str = Field(description="SSID of the access point.", json_schema_extra=meta())
 
 
 class TeleMqtt(SpecModel):
-    state: ModuleState = Field(json_schema_extra=meta())
-    reconnects: Count = Field(json_schema_extra=meta())
-    pub_ok: Count = Field(json_schema_extra=meta())
-    pub_fail: Count = Field(json_schema_extra=meta())
+    """MQTT client state and counters."""
+
+    state: ModuleState = Field(
+        description="Connection state of the MQTT client.", json_schema_extra=meta()
+    )
+    reconnects: Count = Field(
+        description="Number of reconnects to the broker.", json_schema_extra=meta()
+    )
+    pub_ok: Count = Field(description="Successful publishes.", json_schema_extra=meta())
+    pub_fail: Count = Field(description="Failed publishes.", json_schema_extra=meta())
 
 
 class TeleSd(SpecModel):
-    state: ModuleState = Field(json_schema_extra=meta())
+    """SD card storage."""
+
+    state: ModuleState = Field(
+        description="State of the SD card storage.", json_schema_extra=meta()
+    )
 
 
 class TeleBuf(SpecModel):
+    """RAM buffer of records."""
+
     fill: Count = Field(
         description="Records currently held in the RAM buffer.", json_schema_extra=meta()
     )

@@ -8,13 +8,16 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 from jsonschema import Draft202012Validator
 
-from datenspec.codegen import pico, schemas
+from datenspec.codegen import asyncapi, pico, readme, schemas
+from datenspec.topics import TOPICS
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCHEMAS_DIR = REPO_ROOT / "schemas"
 PICO_FILE = REPO_ROOT / pico.OUTPUT
+ASYNCAPI_FILE = REPO_ROOT / asyncapi.OUTPUT
 REGENERATE = "run: python -m datenspec.codegen"
 
 
@@ -89,3 +92,50 @@ def test_pico_file_imports_on_micropython() -> None:
     )
     expected = [f"{n} {v!r}" for n, v in sorted(_pico_constants().items())]
     assert result.stdout.splitlines() == expected
+
+
+def test_asyncapi_file_up_to_date() -> None:
+    assert ASYNCAPI_FILE.exists(), f"{asyncapi.OUTPUT} missing; {REGENERATE}"
+    committed = ASYNCAPI_FILE.read_text(encoding="utf-8")
+    assert committed == asyncapi.render(), f"{asyncapi.OUTPUT} is stale; {REGENERATE}"
+
+
+def _refs(node: object) -> list[str]:
+    if isinstance(node, dict):
+        own = [node["$ref"]] if isinstance(node.get("$ref"), str) else []
+        return own + [r for v in node.values() for r in _refs(v)]
+    if isinstance(node, list):
+        return [r for v in node for r in _refs(v)]
+    return []
+
+
+def test_asyncapi_refs_resolve() -> None:
+    # A dangling ref only shows up in AsyncAPI tooling, which the tests do not run.
+    doc = yaml.safe_load(ASYNCAPI_FILE.read_text(encoding="utf-8"))
+    for ref in _refs(doc):
+        if ref.startswith("#/"):
+            node = doc
+            for part in ref[2:].split("/"):
+                assert part in node, f"dangling ref {ref}"
+                node = node[part]
+        else:
+            assert (ASYNCAPI_FILE.parent / ref).resolve().is_file(), f"missing file {ref}"
+
+
+def test_asyncapi_covers_every_topic() -> None:
+    doc = yaml.safe_load(ASYNCAPI_FILE.read_text(encoding="utf-8"))
+    addresses = {c["address"] for c in doc["channels"].values()}
+    assert addresses == {t.template for t in TOPICS}
+
+
+def test_readme_reference_up_to_date() -> None:
+    text = (REPO_ROOT / readme.OUTPUT).read_text(encoding="utf-8")
+    assert text == readme.update(text), f"README reference is stale; {REGENERATE}"
+
+
+def test_readme_reference_has_no_empty_description() -> None:
+    # The field table is the human-facing spec; an undocumented field is a gap in it.
+    block = readme.render_block()
+    rows = [r for r in block.splitlines() if r.startswith("| `")]
+    empty = [r.split(" | ")[0] for r in rows if r.split(" | ")[4] == ""]
+    assert not empty, f"add a description to: {empty}"

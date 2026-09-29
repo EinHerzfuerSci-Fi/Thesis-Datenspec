@@ -10,13 +10,19 @@ from .vocab import Illumination, LedId
 class SensorsFound(SpecModel):
     """Sensors detected at boot. Sensors added later are optional."""
 
-    ds18b20: bool = Field(json_schema_extra=meta())
-    dht22: bool = Field(json_schema_extra=meta())
-    tcs3448: bool = Field(json_schema_extra=meta())
+    ds18b20: bool = Field(
+        description="At least one DS18B20 found on the bus.", json_schema_extra=meta()
+    )
+    dht22: bool = Field(description="DHT22 responded.", json_schema_extra=meta())
+    tcs3448: bool = Field(description="TCS3448 responded.", json_schema_extra=meta())
 
 
 class LedInfo(SpecModel):
-    id: LedId = Field(json_schema_extra=meta())
+    """One illumination LED."""
+
+    id: LedId = Field(
+        description="LED ID; also the key in data led.", json_schema_extra=meta()
+    )
     peak_nm: Annotated[int, Field(gt=0)] | None = Field(
         description="Peak wavelength; null for the broadband 'vis' LED.",
         json_schema_extra=meta(unit="nm"),
@@ -33,11 +39,15 @@ class LedInfo(SpecModel):
 
 
 class InfoSys(SpecModel):
+    """Device identity and sampling."""
+
     device_name: str = Field(
         description="Configurable device name used for better readability",
         json_schema_extra=meta(),
     )
-    reset_cause: str = Field(json_schema_extra=meta())
+    reset_cause: str = Field(
+        description="Cause of the last reset.", json_schema_extra=meta()
+    )
     sample_interval_ms: Annotated[int, Field(gt=0)] = Field(
         description="Interval between measurement cycles.",
         json_schema_extra=meta(unit="ms"),
@@ -45,11 +55,19 @@ class InfoSys(SpecModel):
 
 
 class InfoDs18b20(SpecModel):
-    resolution_bits: Annotated[int, Field(ge=9, le=12)] = Field(json_schema_extra=meta())
+    """DS18B20 configuration."""
+
+    resolution_bits: Annotated[int, Field(ge=9, le=12)] = Field(
+        description="Configured conversion resolution.", json_schema_extra=meta()
+    )
 
 
 class InfoTcs3448(SpecModel):
-    smux_mode: int = Field(json_schema_extra=meta())
+    """TCS3448 configuration."""
+
+    smux_mode: int = Field(
+        description="SMUX mode of the TCS3448.", json_schema_extra=meta()
+    )
     automatic_gain_control: bool = Field(
         alias="agc",
         description="Gain control mode of the tcs3448 sensor.",
@@ -73,6 +91,8 @@ class InfoCapture(SpecModel):
 
 
 class InfoPio(SpecModel):
+    """PIO program that drives the LEDs in sync with the TCS3448."""
+
     hz: Annotated[int, Field(gt=0)] = Field(
         description="PIO state machine clock.", json_schema_extra=meta(unit="Hz")
     )
@@ -80,6 +100,8 @@ class InfoPio(SpecModel):
 
 
 class InfoPwm(SpecModel):
+    """PWM dimming of the LEDs."""
+
     hz: Annotated[int, Field(gt=0)] = Field(
         description="LED dimming PWM frequency.", json_schema_extra=meta(unit="Hz")
     )
@@ -90,8 +112,10 @@ class InfoPwm(SpecModel):
 
 
 class InfoSd(SpecModel):
-    total: Count = Field(json_schema_extra=meta(unit="B"))
-    free: Count = Field(json_schema_extra=meta(unit="B"))
+    """SD card size at boot."""
+
+    total: Count = Field(description="Card capacity.", json_schema_extra=meta(unit="B"))
+    free: Count = Field(description="Free space.", json_schema_extra=meta(unit="B"))
 
 
 class InfoRecord(RecordHeader):
@@ -110,7 +134,9 @@ class InfoRecord(RecordHeader):
     )
     ds18b20: InfoDs18b20 = Field(json_schema_extra=meta())
     tcs3448: InfoTcs3448 = Field(json_schema_extra=meta())
-    leds: list[LedInfo] = Field(json_schema_extra=meta())
+    leds: list[LedInfo] = Field(
+        description="Illumination LEDs fitted to the device.", json_schema_extra=meta()
+    )
     capture: InfoCapture = Field(json_schema_extra=meta())
     pio: InfoPio = Field(json_schema_extra=meta())
     pwm: InfoPwm = Field(json_schema_extra=meta())

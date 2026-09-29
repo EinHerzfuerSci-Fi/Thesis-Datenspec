@@ -74,6 +74,7 @@
       "x-unit": "s"
     },
     "id": {
+      "description": "Alarm that changed state; also the last topic level.",
       "enum": [
         "temp_high",
         "temp_low",
@@ -84,6 +85,7 @@
       "x-since": 1
     },
     "state": {
+      "description": "New state. Sent only on transitions, with hysteresis in firmware.",
       "enum": [
         "raised",
         "cleared"
@@ -108,6 +110,7 @@
         }
       ],
       "default": null,
+      "description": "Value that triggered the transition, in the unit of the monitored quantity.",
       "title": "Val",
       "x-since": 1
     },
@@ -121,10 +124,12 @@
         }
       ],
       "default": null,
+      "description": "Threshold that was crossed, same unit as val.",
       "title": "Thr",
       "x-since": 1
     },
     "sev": {
+      "description": "Severity of the alarm.",
       "enum": [
         "warn",
         "crit"

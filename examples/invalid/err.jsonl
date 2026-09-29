@@ -1,0 +1,3 @@
+{"case":"code as string","loc":["err","code"],"record":{"v":1,"k":"err","dev":"e6614104032b5a2c","fw":"0.4.1+17b375f","boot":3,"seq":0,"up":10.0,"ts":null,"module":"storage","reason":"write failed","code":"5"}}
+{"case":"unknown module state","loc":["err","state"],"record":{"v":1,"k":"err","dev":"e6614104032b5a2c","fw":"0.4.1+17b375f","boot":3,"seq":0,"up":10.0,"ts":null,"module":"storage","reason":"write failed","code":5,"state":"BROKEN"}}
+{"case":"reason missing","loc":["err","reason"],"record":{"v":1,"k":"err","dev":"e6614104032b5a2c","fw":"0.4.1+17b375f","boot":3,"seq":0,"up":10.0,"ts":null,"module":"storage","code":5}}

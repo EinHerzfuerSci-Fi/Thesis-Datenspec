@@ -74,11 +74,13 @@
       "x-since": 1
     },
     "reason": {
+      "description": "Human-readable error description.",
       "title": "Reason",
       "type": "string",
       "x-since": 1
     },
     "code": {
+      "description": "Error code; its meaning depends on the module.",
       "title": "Code",
       "type": "integer",
       "x-since": 1

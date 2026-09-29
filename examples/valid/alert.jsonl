@@ -1,0 +1,3 @@
+{"v":1,"k":"alert","dev":"e6614104032b5a2c","fw":"0.4.1+17b375f","boot":3,"seq":40,"up":402.0,"ts":1759140402,"id":"temp_high","state":"raised","src":"ds18b20:28ff641e8016043c","val":42.5,"thr":42.0,"sev":"warn","ref_seq":0}
+{"v":1,"k":"alert","dev":"e6614104032b5a2c","fw":"0.4.1+17b375f","boot":3,"seq":55,"up":552.0,"ts":1759140552,"id":"temp_high","state":"cleared","src":"ds18b20:28ff641e8016043c","val":41.2,"thr":42.0,"sev":"warn","ref_seq":54}
+{"v":1,"k":"alert","dev":"e6614104032b5a2c","fw":"0.4.1+17b375f","boot":3,"seq":60,"up":600.5,"ts":null,"id":"temp_low","state":"raised","src":"dht22","val":null,"thr":null,"sev":"crit","ref_seq":59}

@@ -3,6 +3,7 @@
   "x-schema-version": 1,
   "$defs": {
     "TeleBuf": {
+      "description": "RAM buffer of records.",
       "properties": {
         "fill": {
           "description": "Records currently held in the RAM buffer.",
@@ -27,8 +28,10 @@
       "type": "object"
     },
     "TeleMqtt": {
+      "description": "MQTT client state and counters.",
       "properties": {
         "state": {
+          "description": "Connection state of the MQTT client.",
           "enum": [
             "DISCONNECTED",
             "CONNECTED",
@@ -39,18 +42,21 @@
           "x-since": 1
         },
         "reconnects": {
+          "description": "Number of reconnects to the broker.",
           "minimum": 0,
           "title": "Reconnects",
           "type": "integer",
           "x-since": 1
         },
         "pub_ok": {
+          "description": "Successful publishes.",
           "minimum": 0,
           "title": "Pub Ok",
           "type": "integer",
           "x-since": 1
         },
         "pub_fail": {
+          "description": "Failed publishes.",
           "minimum": 0,
           "title": "Pub Fail",
           "type": "integer",
@@ -92,8 +98,10 @@
       "type": "object"
     },
     "TeleSd": {
+      "description": "SD card storage.",
       "properties": {
         "state": {
+          "description": "State of the SD card storage.",
           "enum": [
             "DISCONNECTED",
             "CONNECTED",
@@ -111,8 +119,10 @@
       "type": "object"
     },
     "TeleSys": {
+      "description": "Microcontroller health.",
       "properties": {
         "mem_free": {
+          "description": "Free heap memory.",
           "minimum": 0,
           "title": "Mem Free",
           "type": "integer",
@@ -120,6 +130,7 @@
           "x-unit": "B"
         },
         "cpu_temp": {
+          "description": "Chip temperature.",
           "title": "Cpu Temp",
           "type": "number",
           "x-since": 1,
@@ -151,12 +162,14 @@
     "TeleWlan": {
       "properties": {
         "rssi": {
+          "description": "Signal strength of the access point.",
           "title": "Rssi",
           "type": "integer",
           "x-since": 1,
           "x-unit": "dBm"
         },
         "ssid": {
+          "description": "SSID of the access point.",
           "title": "Ssid",
           "type": "string",
           "x-since": 1

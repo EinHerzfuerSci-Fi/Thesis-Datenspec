@@ -14,8 +14,10 @@ Ds18b20Temp = Annotated[float, Field(ge=-55.0, le=125.0)]
 
 
 class Dht22(SpecModel):
+    """Temperature and humidity; null as a whole if the sensor does not respond."""
+
     temperature: Annotated[float, Field(ge=-40.0, le=80.0)] | None = Field(
-        alias="t", json_schema_extra=meta(unit="°C")
+        alias="t", description="Air temperature.", json_schema_extra=meta(unit="°C")
     )
     relative_humidity: Fraction | None = Field(
         alias="rh",
@@ -38,22 +40,25 @@ class LedDuty(SpecModel):
     vis: Fraction = Field(description=_DUTY_DESC, json_schema_extra=meta(unit="1"))
 
 
+_RAW_DESC = "Raw count of this spectral channel."
+
+
 class TcsRaw(SpecModel):
     """Raw 16-bit counts per spectral channel. Flicker slots (5, 11, 17) are not sent."""
 
-    f1: Uint16 = Field(json_schema_extra=meta(unit="counts"))
-    f2: Uint16 = Field(json_schema_extra=meta(unit="counts"))
-    f3: Uint16 = Field(json_schema_extra=meta(unit="counts"))
-    f4: Uint16 = Field(json_schema_extra=meta(unit="counts"))
-    f5: Uint16 = Field(json_schema_extra=meta(unit="counts"))
-    f6: Uint16 = Field(json_schema_extra=meta(unit="counts"))
-    f7: Uint16 = Field(json_schema_extra=meta(unit="counts"))
-    f8: Uint16 = Field(json_schema_extra=meta(unit="counts"))
-    fz: Uint16 = Field(json_schema_extra=meta(unit="counts"))
-    fy: Uint16 = Field(json_schema_extra=meta(unit="counts"))
-    fxl: Uint16 = Field(json_schema_extra=meta(unit="counts"))
-    nir: Uint16 = Field(json_schema_extra=meta(unit="counts"))
-    vis: Uint16 = Field(json_schema_extra=meta(unit="counts"))
+    f1: Uint16 = Field(description=_RAW_DESC, json_schema_extra=meta(unit="counts"))
+    f2: Uint16 = Field(description=_RAW_DESC, json_schema_extra=meta(unit="counts"))
+    f3: Uint16 = Field(description=_RAW_DESC, json_schema_extra=meta(unit="counts"))
+    f4: Uint16 = Field(description=_RAW_DESC, json_schema_extra=meta(unit="counts"))
+    f5: Uint16 = Field(description=_RAW_DESC, json_schema_extra=meta(unit="counts"))
+    f6: Uint16 = Field(description=_RAW_DESC, json_schema_extra=meta(unit="counts"))
+    f7: Uint16 = Field(description=_RAW_DESC, json_schema_extra=meta(unit="counts"))
+    f8: Uint16 = Field(description=_RAW_DESC, json_schema_extra=meta(unit="counts"))
+    fz: Uint16 = Field(description=_RAW_DESC, json_schema_extra=meta(unit="counts"))
+    fy: Uint16 = Field(description=_RAW_DESC, json_schema_extra=meta(unit="counts"))
+    fxl: Uint16 = Field(description=_RAW_DESC, json_schema_extra=meta(unit="counts"))
+    nir: Uint16 = Field(description=_RAW_DESC, json_schema_extra=meta(unit="counts"))
+    vis: Uint16 = Field(description=_RAW_DESC, json_schema_extra=meta(unit="counts"))
     vis_2: Uint16 | None = Field(
         default=None,
         description="VIS from the 2nd SMUX cycle; differs from vis if light changed mid-measurement.",
@@ -69,7 +74,11 @@ class TcsRaw(SpecModel):
 class TcsCapture(SpecModel):
     """One integration under one illumination."""
 
-    illumination: Illumination = Field(alias="ill", json_schema_extra=meta())
+    illumination: Illumination = Field(
+        alias="ill",
+        description="Illumination during this capture; dark means all LEDs off.",
+        json_schema_extra=meta(),
+    )
     led: LedDuty = Field(json_schema_extra=meta())
     dt: int = Field(
         description="Start of integration relative to the record's up.",
@@ -95,10 +104,20 @@ class TcsCapture(SpecModel):
         json_schema_extra=meta(),
     )
     # Derived on the Pico with the vendor library; analysis relies on raw.
-    lux: float | None = Field(default=None, json_schema_extra=meta(unit="lx"))
-    cct: float | None = Field(default=None, json_schema_extra=meta(unit="K"))
-    cie_x: float | None = Field(default=None, json_schema_extra=meta(unit="1"))
-    cie_y: float | None = Field(default=None, json_schema_extra=meta(unit="1"))
+    lux: float | None = Field(
+        default=None, description="Illuminance.", json_schema_extra=meta(unit="lx")
+    )
+    cct: float | None = Field(
+        default=None,
+        description="Correlated colour temperature.",
+        json_schema_extra=meta(unit="K"),
+    )
+    cie_x: float | None = Field(
+        default=None, description="CIE chromaticity x.", json_schema_extra=meta(unit="1")
+    )
+    cie_y: float | None = Field(
+        default=None, description="CIE chromaticity y.", json_schema_extra=meta(unit="1")
+    )
 
     @model_validator(mode="after")
     def _dark_means_leds_off(self) -> Self:

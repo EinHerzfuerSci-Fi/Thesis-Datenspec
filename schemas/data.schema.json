@@ -3,6 +3,7 @@
   "x-schema-version": 1,
   "$defs": {
     "Dht22": {
+      "description": "Temperature and humidity; null as a whole if the sensor does not respond.",
       "properties": {
         "t": {
           "anyOf": [
@@ -15,6 +16,7 @@
               "type": "null"
             }
           ],
+          "description": "Air temperature.",
           "title": "T",
           "x-since": 1,
           "x-unit": "°C"
@@ -153,6 +155,7 @@
       "description": "One integration under one illumination.",
       "properties": {
         "ill": {
+          "description": "Illumination during this capture; dark means all LEDs off.",
           "enum": [
             "dark",
             "nir",
@@ -218,6 +221,7 @@
             }
           ],
           "default": null,
+          "description": "Illuminance.",
           "title": "Lux",
           "x-since": 1,
           "x-unit": "lx"
@@ -232,6 +236,7 @@
             }
           ],
           "default": null,
+          "description": "Correlated colour temperature.",
           "title": "Cct",
           "x-since": 1,
           "x-unit": "K"
@@ -246,6 +251,7 @@
             }
           ],
           "default": null,
+          "description": "CIE chromaticity x.",
           "title": "Cie X",
           "x-since": 1,
           "x-unit": "1"
@@ -260,6 +266,7 @@
             }
           ],
           "default": null,
+          "description": "CIE chromaticity y.",
           "title": "Cie Y",
           "x-since": 1,
           "x-unit": "1"
@@ -282,6 +289,7 @@
       "description": "Raw 16-bit counts per spectral channel. Flicker slots (5, 11, 17) are not sent.",
       "properties": {
         "f1": {
+          "description": "Raw count of this spectral channel.",
           "maximum": 65535,
           "minimum": 0,
           "title": "F1",
@@ -290,6 +298,7 @@
           "x-unit": "counts"
         },
         "f2": {
+          "description": "Raw count of this spectral channel.",
           "maximum": 65535,
           "minimum": 0,
           "title": "F2",
@@ -298,6 +307,7 @@
           "x-unit": "counts"
         },
         "f3": {
+          "description": "Raw count of this spectral channel.",
           "maximum": 65535,
           "minimum": 0,
           "title": "F3",
@@ -306,6 +316,7 @@
           "x-unit": "counts"
         },
         "f4": {
+          "description": "Raw count of this spectral channel.",
           "maximum": 65535,
           "minimum": 0,
           "title": "F4",
@@ -314,6 +325,7 @@
           "x-unit": "counts"
         },
         "f5": {
+          "description": "Raw count of this spectral channel.",
           "maximum": 65535,
           "minimum": 0,
           "title": "F5",
@@ -322,6 +334,7 @@
           "x-unit": "counts"
         },
         "f6": {
+          "description": "Raw count of this spectral channel.",
           "maximum": 65535,
           "minimum": 0,
           "title": "F6",
@@ -330,6 +343,7 @@
           "x-unit": "counts"
         },
         "f7": {
+          "description": "Raw count of this spectral channel.",
           "maximum": 65535,
           "minimum": 0,
           "title": "F7",
@@ -338,6 +352,7 @@
           "x-unit": "counts"
         },
         "f8": {
+          "description": "Raw count of this spectral channel.",
           "maximum": 65535,
           "minimum": 0,
           "title": "F8",
@@ -346,6 +361,7 @@
           "x-unit": "counts"
         },
         "fz": {
+          "description": "Raw count of this spectral channel.",
           "maximum": 65535,
           "minimum": 0,
           "title": "Fz",
@@ -354,6 +370,7 @@
           "x-unit": "counts"
         },
         "fy": {
+          "description": "Raw count of this spectral channel.",
           "maximum": 65535,
           "minimum": 0,
           "title": "Fy",
@@ -362,6 +379,7 @@
           "x-unit": "counts"
         },
         "fxl": {
+          "description": "Raw count of this spectral channel.",
           "maximum": 65535,
           "minimum": 0,
           "title": "Fxl",
@@ -370,6 +388,7 @@
           "x-unit": "counts"
         },
         "nir": {
+          "description": "Raw count of this spectral channel.",
           "maximum": 65535,
           "minimum": 0,
           "title": "Nir",
@@ -378,6 +397,7 @@
           "x-unit": "counts"
         },
         "vis": {
+          "description": "Raw count of this spectral channel.",
           "maximum": 65535,
           "minimum": 0,
           "title": "Vis",

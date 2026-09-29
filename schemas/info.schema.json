@@ -46,8 +46,10 @@
       "type": "object"
     },
     "InfoDs18b20": {
+      "description": "DS18B20 configuration.",
       "properties": {
         "resolution_bits": {
+          "description": "Configured conversion resolution.",
           "maximum": 12,
           "minimum": 9,
           "title": "Resolution Bits",
@@ -62,6 +64,7 @@
       "type": "object"
     },
     "InfoPio": {
+      "description": "PIO program that drives the LEDs in sync with the TCS3448.",
       "properties": {
         "hz": {
           "description": "PIO state machine clock.",
@@ -86,6 +89,7 @@
       "type": "object"
     },
     "InfoPwm": {
+      "description": "PWM dimming of the LEDs.",
       "properties": {
         "hz": {
           "description": "LED dimming PWM frequency.",
@@ -110,8 +114,10 @@
       "type": "object"
     },
     "InfoSd": {
+      "description": "SD card size at boot.",
       "properties": {
         "total": {
+          "description": "Card capacity.",
           "minimum": 0,
           "title": "Total",
           "type": "integer",
@@ -119,6 +125,7 @@
           "x-unit": "B"
         },
         "free": {
+          "description": "Free space.",
           "minimum": 0,
           "title": "Free",
           "type": "integer",
@@ -134,6 +141,7 @@
       "type": "object"
     },
     "InfoSys": {
+      "description": "Device identity and sampling.",
       "properties": {
         "device_name": {
           "description": "Configurable device name used for better readability",
@@ -142,6 +150,7 @@
           "x-since": 1
         },
         "reset_cause": {
+          "description": "Cause of the last reset.",
           "title": "Reset Cause",
           "type": "string",
           "x-since": 1
@@ -164,8 +173,10 @@
       "type": "object"
     },
     "InfoTcs3448": {
+      "description": "TCS3448 configuration.",
       "properties": {
         "smux_mode": {
+          "description": "SMUX mode of the TCS3448.",
           "title": "Smux Mode",
           "type": "integer",
           "x-since": 1
@@ -185,8 +196,10 @@
       "type": "object"
     },
     "LedInfo": {
+      "description": "One illumination LED.",
       "properties": {
         "id": {
+          "description": "LED ID; also the key in data led.",
           "enum": [
             "nir",
             "blue",
@@ -231,16 +244,19 @@
       "description": "Sensors detected at boot. Sensors added later are optional.",
       "properties": {
         "ds18b20": {
+          "description": "At least one DS18B20 found on the bus.",
           "title": "Ds18B20",
           "type": "boolean",
           "x-since": 1
         },
         "dht22": {
+          "description": "DHT22 responded.",
           "title": "Dht22",
           "type": "boolean",
           "x-since": 1
         },
         "tcs3448": {
+          "description": "TCS3448 responded.",
           "title": "Tcs3448",
           "type": "boolean",
           "x-since": 1
@@ -340,6 +356,7 @@
       "x-since": 1
     },
     "leds": {
+      "description": "Illumination LEDs fitted to the device.",
       "items": {
         "$ref": "#/$defs/LedInfo"
       },

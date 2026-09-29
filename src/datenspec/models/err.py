@@ -13,8 +13,13 @@ class ErrRecord(RecordHeader):
         description="Module of the firmware the error originates from.",
         json_schema_extra=meta(),
     )
-    reason: str = Field(json_schema_extra=meta())
-    code: int = Field(json_schema_extra=meta())
+    reason: str = Field(
+        description="Human-readable error description.", json_schema_extra=meta()
+    )
+    code: int = Field(
+        description="Error code; its meaning depends on the module.",
+        json_schema_extra=meta(),
+    )
     state: ModuleState | None = Field(
         default=None,
         description="State of the module at the time of the error. Only applicable if the module has a state.",
