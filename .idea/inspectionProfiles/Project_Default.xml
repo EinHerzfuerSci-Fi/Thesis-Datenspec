@@ -1,0 +1,47 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyMissingOrEmptyDocstringInspection" enabled="true" level="STYLE_SUGGESTION" enabled_by_default="true" editorAttributes="TEXT_STYLE_SUGGESTION" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="false" level="WARNING" enabled_by_default="false">
+      <option name="ignoredPackages">
+        <list>
+          <option value="scrapy" />
+          <option value="lxml" />
+          <option value="pyopenssl" />
+          <option value="service-identity" />
+          <option value="itemloaders" />
+          <option value="scrapy-playwright" />
+          <option value="ipython" />
+          <option value="pydantic" />
+          <option value="mistralai" />
+          <option value="w3lib" />
+          <option value="black" />
+          <option value="filelock" />
+          <option value="instructor" />
+          <option value="mattermost-log-handler" />
+          <option value="pdfplumber" />
+          <option value="pip-audit" />
+          <option value="pytest-asyncio" />
+          <option value="python-dotenv" />
+          <option value="rich" />
+          <option value="ruff" />
+          <option value="sympy" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyPep8NamingInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredErrors">
+        <list>
+          <option value="N806" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="config" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

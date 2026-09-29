@@ -1,0 +1,84 @@
+"""
+Periodic health snapshot, grouped per subsystem.
+
+A group is null when its subsystem has nothing to report (no WLAN association, no NTP
+sync yet). Groups whose state is itself the information (mqtt, sd) are never null.
+New subsystems are added as optional groups so v need not change.
+"""
+
+from typing import Annotated, Literal, Self
+
+from pydantic import Field, model_validator
+
+from ._base import Count, SpecModel, meta
+from .header import RecordHeader
+from .vocab import ModuleState
+
+
+class TeleSys(SpecModel):
+    mem_free: Count = Field(json_schema_extra=meta(unit="B"))
+    cpu_temp: float = Field(json_schema_extra=meta(unit="°C"))
+    vsys: float | None = Field(
+        description="null if not measurable on this board.",
+        json_schema_extra=meta(unit="V"),
+    )
+
+
+class TeleWlan(SpecModel):
+    rssi: int = Field(json_schema_extra=meta(unit="dBm"))
+    ssid: str = Field(json_schema_extra=meta())
+
+
+class TeleMqtt(SpecModel):
+    state: ModuleState = Field(json_schema_extra=meta())
+    reconnects: Count = Field(json_schema_extra=meta())
+    pub_ok: Count = Field(json_schema_extra=meta())
+    pub_fail: Count = Field(json_schema_extra=meta())
+
+
+class TeleSd(SpecModel):
+    state: ModuleState = Field(json_schema_extra=meta())
+
+
+class TeleBuf(SpecModel):
+    fill: Count = Field(
+        description="Records currently held in the RAM buffer.", json_schema_extra=meta()
+    )
+    cap: Count = Field(
+        description="RAM buffer capacity in records.", json_schema_extra=meta()
+    )
+
+    @model_validator(mode="after")
+    def _fill_within_cap(self) -> Self:
+        if self.fill > self.cap:
+            raise ValueError("fill exceeds cap")
+        return self
+
+
+class TeleNtp(SpecModel):
+    last_up: Annotated[float, Field(ge=0.0)] = Field(
+        description="up at the last successful NTP sync.",
+        json_schema_extra=meta(unit="s"),
+    )
+    last_corr: float = Field(
+        description="Clock correction applied at the last NTP sync.",
+        json_schema_extra=meta(unit="s"),
+    )
+
+
+class TeleRecord(RecordHeader):
+    """Periodic health snapshot (~60 s)."""
+
+    kind: Literal["tele"] = Field(alias="k", json_schema_extra=meta())
+    sys: TeleSys = Field(json_schema_extra=meta())
+    wlan: TeleWlan | None = Field(
+        description="null while not associated with an access point.",
+        json_schema_extra=meta(),
+    )
+    mqtt: TeleMqtt = Field(json_schema_extra=meta())
+    sd: TeleSd = Field(json_schema_extra=meta())
+    buf: TeleBuf = Field(json_schema_extra=meta())
+    ntp: TeleNtp | None = Field(
+        description="null until the first successful NTP sync of this boot.",
+        json_schema_extra=meta(),
+    )
