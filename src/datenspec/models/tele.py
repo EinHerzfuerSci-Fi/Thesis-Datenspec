@@ -103,3 +103,9 @@ class TeleRecord(RecordHeader):
         description="null until the first successful NTP sync of this boot.",
         json_schema_extra=meta(),
     )
+
+    @model_validator(mode="after")
+    def _ntp_sync_not_after_snapshot(self) -> Self:
+        if self.ntp is not None and self.ntp.last_up > self.uptime:
+            raise ValueError("ntp.last_up is after up")
+        return self

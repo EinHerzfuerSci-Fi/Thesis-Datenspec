@@ -4,7 +4,7 @@ Generate the AsyncAPI 3.0 description of the device's MQTT interface.
 Topics, QoS and retain come from datenspec.topics; payloads reference the exported JSON
 Schemas instead of inlining them, so the schemas stay the only payload definition.
 Operations are seen from the device: it sends its records and receives cmd. Topics
-between laptop and pipeline (session, annotation) are channels without an operation,
+between laptop and pipeline (session, annotation, tag) are channels without an operation,
 because the device neither sends nor receives them.
 """
 

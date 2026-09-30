@@ -122,6 +122,12 @@ class InfoSd(SpecModel):
     total: Count = Field(description="Card capacity.", json_schema_extra=meta(unit="B"))
     free: Count = Field(description="Free space.", json_schema_extra=meta(unit="B"))
 
+    @model_validator(mode="after")
+    def _free_within_total(self) -> Self:
+        if self.free > self.total:
+            raise ValueError("free exceeds total")
+        return self
+
 
 class InfoRecord(RecordHeader):
     """

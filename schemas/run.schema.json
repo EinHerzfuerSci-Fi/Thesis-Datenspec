@@ -3,7 +3,7 @@
   "x-schema-version": 2,
   "$defs": {
     "RunEndRecord": {
-      "description": "End of a run; sent after its last data record.",
+      "description": "End of a run; sent after its last data record, in the same boot as the start record.\nIts up is greater than or equal to, and its seq greater than, those of the start\nrecord. This relates two records, so the models cannot check it.",
       "properties": {
         "v": {
           "description": "Version of the schema. Increased only on breaking changes.",

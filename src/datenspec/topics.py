@@ -138,4 +138,13 @@ TOPICS: tuple[Topic, ...] = (
         payload="annotation",
         sender="laptop",
     ),
+    Topic(
+        "tag",
+        "thesis/laptop/tag",
+        qos=1,
+        retain=False,
+        description="Sets or deletes a key/value tag on a run.",
+        payload="tag",
+        sender="laptop",
+    ),
 )

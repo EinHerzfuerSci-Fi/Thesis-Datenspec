@@ -1,0 +1,8 @@
+{"case":"key in upper case","loc":["tag","key"],"record":{"v":2,"k":"tag","id":"d4e5f6a7-b8c9-4d0e-9f1a-3b4c5d6e7f80","dev":"e6614104032b5a2c","run":7,"key":"Distance","value":"12.5","ts":1759141500.75}}
+{"case":"key with hyphen","loc":["tag","key"],"record":{"v":2,"k":"tag","id":"d4e5f6a7-b8c9-4d0e-9f1a-3b4c5d6e7f80","dev":"e6614104032b5a2c","run":7,"key":"light-level","value":"12.5","ts":1759141500.75}}
+{"case":"key empty","loc":["tag","key"],"record":{"v":2,"k":"tag","id":"d4e5f6a7-b8c9-4d0e-9f1a-3b4c5d6e7f80","dev":"e6614104032b5a2c","run":7,"key":"","value":"12.5","ts":1759141500.75}}
+{"case":"value as number","loc":["tag","value"],"record":{"v":2,"k":"tag","id":"d4e5f6a7-b8c9-4d0e-9f1a-3b4c5d6e7f80","dev":"e6614104032b5a2c","run":7,"key":"distance","value":12.5,"ts":1759141500.75}}
+{"case":"value key missing instead of null","loc":["tag","value"],"record":{"v":2,"k":"tag","id":"d4e5f6a7-b8c9-4d0e-9f1a-3b4c5d6e7f80","dev":"e6614104032b5a2c","run":7,"key":"distance","ts":1759141500.75}}
+{"case":"run null","loc":["tag","run"],"record":{"v":2,"k":"tag","id":"d4e5f6a7-b8c9-4d0e-9f1a-3b4c5d6e7f80","dev":"e6614104032b5a2c","run":null,"key":"distance","value":"12.5","ts":1759141500.75}}
+{"case":"dev missing","loc":["tag","dev"],"record":{"v":2,"k":"tag","id":"d4e5f6a7-b8c9-4d0e-9f1a-3b4c5d6e7f80","run":7,"key":"distance","value":"12.5","ts":1759141500.75}}
+{"case":"id not a UUID","loc":["tag","id"],"record":{"v":2,"k":"tag","id":"tag-1","dev":"e6614104032b5a2c","run":7,"key":"distance","value":"12.5","ts":1759141500.75}}

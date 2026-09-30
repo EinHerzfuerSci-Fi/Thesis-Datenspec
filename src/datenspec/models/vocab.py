@@ -9,7 +9,7 @@ from typing import Literal
 # Sent by the Pico, with the full record header.
 RecordKind = Literal["data", "alert", "tele", "err", "info", "log", "run", "ack"]
 # Sent by the laptop, with only v and k.
-LaptopKind = Literal["cmd", "session", "annotation"]
+LaptopKind = Literal["cmd", "session", "annotation", "tag"]
 
 LedId = Literal["nir", "blue", "vis"]
 Illumination = Literal["dark", "nir", "blue", "vis"]
@@ -29,6 +29,8 @@ RunEndReason = Literal["duration", "manual", "error"]
 
 CmdAction = Literal["start", "stop"]
 AckResult = Literal["ok", "rejected", "error"]
+
+SessionVariety = Literal["normal", "calibration", "functional", "flowrate"]
 
 # Wire keys of the TCS3448 spectral channels (not SMUX slots).
 TcsChannel = Literal[

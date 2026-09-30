@@ -1,6 +1,9 @@
 """
 Start and end of a run (measurement series). The firmware decides when a run starts and
 ends; one kind with the event in ev, so both travel on the same topic.
+
+A run never spans a reboot: a run interrupted by a reboot is not resumed, and the
+pipeline marks it aborted.
 """
 
 from typing import Annotated, Literal
@@ -43,7 +46,11 @@ class RunStartRecord(_RunRecord):
 
 
 class RunEndRecord(_RunRecord):
-    """End of a run; sent after its last data record."""
+    """
+    End of a run; sent after its last data record, in the same boot as the start record.
+    Its up is greater than or equal to, and its seq greater than, those of the start
+    record. This relates two records, so the models cannot check it.
+    """
 
     event: Literal["end"] = Field(
         alias="ev", description="Run event.", json_schema_extra=meta(since=2)
