@@ -5,9 +5,9 @@ from .data import DataRecord, Dht22, LedDuty, Measurements, TcsCapture, TcsRaw
 from .err import ErrRecord
 from .header import MessageHeader, RecordHeader
 from .info import (
-    InfoCapture,
     InfoDs18b20,
     InfoPio,
+    InfoProfiles,
     InfoPwm,
     InfoRecord,
     InfoSd,
@@ -31,6 +31,7 @@ from .laptop import (
     validate_laptop_message,
 )
 from .log import LogRecord
+from .profile import CaptureConfig, ProfileFile, ProfileName, RunConfig
 from .record import (
     RECORD_KINDS,
     RECORD_MODELS,
@@ -53,15 +54,16 @@ __all__ = [
     "AckRecord",
     "AlertRecord",
     "AnnotationMessage",
+    "CaptureConfig",
     "CmdMessage",
     "CmdStart",
     "CmdStop",
     "DataRecord",
     "Dht22",
     "ErrRecord",
-    "InfoCapture",
     "InfoDs18b20",
     "InfoPio",
+    "InfoProfiles",
     "InfoPwm",
     "InfoRecord",
     "InfoSd",
@@ -73,8 +75,11 @@ __all__ = [
     "LogRecord",
     "Measurements",
     "MessageHeader",
+    "ProfileFile",
+    "ProfileName",
     "Record",
     "RecordHeader",
+    "RunConfig",
     "RunEndRecord",
     "RunRecord",
     "RunStartRecord",

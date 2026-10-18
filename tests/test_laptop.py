@@ -37,7 +37,12 @@ def test_annotation_schema_accepts_dev_without_run() -> None:
 
 @pytest.mark.parametrize(
     ("act", "wrong"),
-    [("start", {"run": 7}), ("stop", {"run": None}), ("stop", {"dur": 60})],
+    [
+        ("start", {"run": 7}),
+        ("stop", {"run": None}),
+        ("stop", {"dur": 60}),
+        ("stop", {"profile": "turbidity"}),
+    ],
 )
 def test_cmd_schema_enforces_fields_per_action(act: str, wrong: dict) -> None:
     cmd = {
@@ -47,6 +52,7 @@ def test_cmd_schema_enforces_fields_per_action(act: str, wrong: dict) -> None:
         "act": act,
         "dur": 60 if act == "start" else None,
         "session": None,
+        "profile": None,
         "run": None if act == "start" else 7,
         "ts": 1759140059.4,
     }

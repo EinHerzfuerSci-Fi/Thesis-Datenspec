@@ -83,7 +83,6 @@ BODIES: dict[str, dict[str, Any]] = {
         "sys": {
             "device_name": "pico-a",
             "reset_cause": "PWRON_RESET",
-            "sample_interval_ms": 10000,
         },
         "sensors": {"ds18b20": True, "dht22": True, "tcs3448": True},
         "ds18b20": {"resolution_bits": 12, "rom": "28ff641e8016043c"},
@@ -93,13 +92,23 @@ BODIES: dict[str, dict[str, Any]] = {
             {"id": "blue", "peak_nm": 450, "pin": 3},
             {"id": "vis", "peak_nm": None, "pin": 4},
         ],
-        "capture": {"sequence": ["dark", "nir"], "settle_ms": 5, "on_ms": 120},
+        "profiles": {"names": ["turbidity", "led_test"], "default": "turbidity"},
         "pio": {"hz": 1_000_000, "prog": "1.0"},
         "pwm": {"hz": 20_000, "sync": True},
         "sd": {"total": 32_000_000_000, "free": 31_000_000_000},
     },
     "log": {"lvl": "info", "module": "main", "msg": "boot complete"},
-    "run": {"ev": "start", "dur": 3600, "session": None, "cmd_id": None},
+    "run": {
+        "ev": "start",
+        "dur": 3600,
+        "session": None,
+        "cmd_id": None,
+        "profile": "turbidity",
+        "cfg": {
+            "sample_interval_ms": 10000,
+            "capture": {"sequence": ["dark", "nir"], "settle_ms": 5, "on_ms": 120},
+        },
+    },
     "ack": {
         "cmd_id": "3f2b8c1e-6d4a-4e2f-9b1a-7c5d0e8f2a91",
         "res": "ok",

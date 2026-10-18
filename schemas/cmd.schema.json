@@ -62,6 +62,20 @@
           "title": "Session",
           "x-since": 2
         },
+        "profile": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9_]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Profile to measure with; null = the device's default profile. A name the device does not have is answered with ack rejected.",
+          "title": "Profile",
+          "x-since": 2
+        },
         "run": {
           "description": "Always null for start: the device assigns the run ID.",
           "title": "Run",
@@ -84,6 +98,7 @@
         "act",
         "dur",
         "session",
+        "profile",
         "run",
         "ts"
       ],
@@ -133,6 +148,12 @@
           "type": "null",
           "x-since": 2
         },
+        "profile": {
+          "description": "Always null for stop.",
+          "title": "Profile",
+          "type": "null",
+          "x-since": 2
+        },
         "run": {
           "description": "Run to stop.",
           "minimum": 0,
@@ -156,6 +177,7 @@
         "act",
         "dur",
         "session",
+        "profile",
         "run",
         "ts"
       ],

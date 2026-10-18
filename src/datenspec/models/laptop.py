@@ -10,6 +10,7 @@ from pydantic import ConfigDict, Field, TypeAdapter, model_validator
 
 from ._base import FORBID_EXTRA, Count, HexId16, Uuid, meta
 from .header import MessageHeader
+from .profile import ProfileName
 from .vocab import SessionVariety
 
 LaptopTimestamp = Annotated[float, Field(ge=0.0)]
@@ -43,6 +44,11 @@ class CmdStart(_Cmd):
         description="Session the run belongs to; null if none.",
         json_schema_extra=meta(since=2),
     )
+    profile: ProfileName | None = Field(
+        description="Profile to measure with; null = the device's default profile. A "
+        "name the device does not have is answered with ack rejected.",
+        json_schema_extra=meta(since=2),
+    )
     run: None = Field(
         description="Always null for start: the device assigns the run ID.",
         json_schema_extra=meta(since=2),
@@ -64,6 +70,9 @@ class CmdStop(_Cmd):
         json_schema_extra=meta(since=2),
     )
     session: None = Field(
+        description="Always null for stop.", json_schema_extra=meta(since=2)
+    )
+    profile: None = Field(
         description="Always null for stop.", json_schema_extra=meta(since=2)
     )
     run: Count = Field(

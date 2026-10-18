@@ -16,9 +16,9 @@ import pytest
 from jsonschema import Draft202012Validator
 from pydantic import ValidationError
 
-from datenspec.codegen import schemas
 from datenspec.models import (
     LAPTOP_KINDS,
+    RECORD_KINDS,
     parse_laptop_message,
     parse_record,
     validate_laptop_message,
@@ -27,7 +27,7 @@ from datenspec.models import (
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = REPO_ROOT / "examples"
-KINDS = [name for name in schemas.TARGETS if name != "header"]
+KINDS = [*RECORD_KINDS, *LAPTOP_KINDS]
 CASE_KEYS = {"case", "loc", "record", "strict_only"}
 
 

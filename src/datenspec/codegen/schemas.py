@@ -4,10 +4,19 @@ from typing import Any
 
 from pydantic import TypeAdapter
 
-from datenspec.models import LAPTOP_KINDS, RECORD_KINDS, SCHEMA_VERSION, RecordHeader
+from datenspec.models import (
+    LAPTOP_KINDS,
+    RECORD_KINDS,
+    SCHEMA_VERSION,
+    ProfileFile,
+    RecordHeader,
+)
 
 # One file per k; a kind with variants (run, cmd) is exported as its discriminated union.
-TARGETS: dict[str, Any] = {"header": RecordHeader} | RECORD_KINDS | LAPTOP_KINDS
+# profiles is the device's profile file, not a message: it lets an editor validate it.
+TARGETS: dict[str, Any] = (
+    {"header": RecordHeader} | RECORD_KINDS | LAPTOP_KINDS | {"profiles": ProfileFile}
+)
 
 
 def json_schema(target: Any) -> dict[str, Any]:

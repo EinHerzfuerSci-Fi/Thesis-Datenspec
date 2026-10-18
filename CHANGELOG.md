@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.4.0
+
+Measurement profiles, so the laptop can start runs that measure differently. Schema
+`v2` changed in place again: no device or SD card has written `v2` yet, so `v` stays 2.
+Messages valid under 0.3.0 may be rejected by 0.4.0 and vice versa.
+
+- `cmd`: new required field `profile`: a profile name (`^[a-z0-9_]+$`) or `null` for
+  the device's default on `start`, always `null` on `stop`.
+- `run` start: new required fields `profile` (the name actually used, never `null`) and
+  `cfg` with the resolved settings: `sample_interval_ms` and `capture` (`sequence`,
+  `settle_ms`, `on_ms`). `cfg.capture.sequence` needs exactly one `dark`.
+- `info`: `sys.sample_interval_ms` and the `capture` group removed; they change per run
+  now and live in the run's `cfg`. New required group `profiles` with `names` and
+  `default`.
+- New `schemas/profiles.schema.json` and model `ProfileFile` for the device's profile
+  file (name -> `RunConfig`). It is not a message and has no topic.
+
 ## 0.3.0
 
 Schema `v2` changed in place: no device or SD card has written `v2` yet, so `v` stays 2.
