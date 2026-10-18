@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.0
+
+Alarms outside runs. The device watches its alarms all the time, not only while a run
+measures, so an alert can be raised or cleared when there is no data record to refer
+to. Schema `v2` changed in place: no device or SD card has written an `alert` yet, so
+`v` stays 2. Every alert valid under 0.4.0 is valid under 0.5.0.
+
+- `alert`: `ref_seq` may be `null`, and is `null` exactly when `run` is `null`. Inside a
+  run it still names the data record that triggered the transition.
+
 ## 0.4.0
 
 Measurement profiles, so the laptop can start runs that measure differently. Schema

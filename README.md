@@ -208,7 +208,8 @@ tooling) accepts records that break them:
   duplicates and contains `profiles.default`
 - `run` and the profile file: `cfg.capture.sequence` has exactly one `dark`
 - `alert`: `thr` is required when `val` is set (this one is in the schema as
-  `dependentRequired` and in the model)
+  `dependentRequired` and in the model); `ref_seq` is `null` exactly when `run` is
+  `null` (in the schema as `if`/`then`/`else` and in the model)
 - `annotation`: `run` requires `dev` (in the schema as `if`/`then` and in the model)
 
 Rules across two records (the end of a run after its start, the captures of a
@@ -321,7 +322,7 @@ Nested fields use dotted paths; `[]` marks list elements. `Since v` is the schem
 | `val` | number \| null |  | optional | Value that triggered the transition, in the unit of the monitored quantity. | 1 |
 | `thr` | number \| null |  | optional | Threshold that was crossed, same unit as val. | 1 |
 | `sev` | "warn" \| "crit" |  | required | Severity of the alarm. | 1 |
-| `ref_seq` | integer (≥ 0) |  | required | seq of the data record that triggered the transition, in the run given by run: the record's key is (dev, run, ref_seq). | 1 |
+| `ref_seq` | integer (≥ 0) \| null |  | required | seq of the data record that triggered the transition, in the run given by run: the record's key is (dev, run, ref_seq). null exactly when run is null: alarms are watched outside runs too, where there is no data record. | 1 |
 
 ### `tele` (`"k": "tele"`, from the Pico)
 
