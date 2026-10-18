@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.5
+
+Version bump only. Schema, models and examples are unchanged from 0.5.0; `v` stays 2.
+
 ## 0.5.0
 
 Alarms outside runs, and gain control per run. The device watches its alarms all the time, not only while a run
