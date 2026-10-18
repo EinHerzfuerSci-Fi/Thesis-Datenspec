@@ -60,6 +60,11 @@ ILL_NIR = "nir"
 ILL_BLUE = "blue"
 ILL_VIS = "vis"
 
+# gain control mode (cfg.capture.gain_control.mode)
+GAIN_FIXED = "fixed"
+GAIN_AMS = "ams"
+GAIN_DARK = "dark"
+
 # LED IDs; also the keys of led
 LED_NIR = "nir"
 LED_BLUE = "blue"
@@ -244,6 +249,10 @@ F_CAPTURE = "capture"
 F_SEQUENCE = "sequence"
 F_SETTLE_MS = "settle_ms"  # ms
 F_ON_MS = "on_ms"  # ms
+F_GAIN_CONTROL = "gain_control"
+# GainControl
+F_MODE = "mode"
+F_STAGES = "stages"
 # RunEndRecord
 F_N_DATA = "n_data"
 # AckRecord

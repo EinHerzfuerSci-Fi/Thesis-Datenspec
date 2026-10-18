@@ -31,7 +31,7 @@ from .laptop import (
     validate_laptop_message,
 )
 from .log import LogRecord
-from .profile import CaptureConfig, ProfileFile, ProfileName, RunConfig
+from .profile import CaptureConfig, GainControl, ProfileFile, ProfileName, RunConfig
 from .record import (
     RECORD_KINDS,
     RECORD_MODELS,
@@ -55,6 +55,7 @@ __all__ = [
     "AlertRecord",
     "AnnotationMessage",
     "CaptureConfig",
+    "GainControl",
     "CmdMessage",
     "CmdStart",
     "CmdStop",

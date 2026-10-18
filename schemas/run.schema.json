@@ -35,14 +35,59 @@
           "type": "integer",
           "x-since": 2,
           "x-unit": "ms"
+        },
+        "gain_control": {
+          "$ref": "#/$defs/GainControl",
+          "x-since": 2
         }
       },
       "required": [
         "sequence",
         "settle_ms",
-        "on_ms"
+        "on_ms",
+        "gain_control"
       ],
       "title": "CaptureConfig",
+      "type": "object"
+    },
+    "GainControl": {
+      "description": "How the run picks the gain of each capture.",
+      "properties": {
+        "mode": {
+          "description": "fixed: every capture uses the gain its profile names. ams: the auto-gain search of ams AN001051, per illumination from one cycle to the next. dark: the gain of each lit capture predicted from the cycle's dark capture and the LED's share in the previous cycle.",
+          "enum": [
+            "fixed",
+            "ams",
+            "dark"
+          ],
+          "title": "Mode",
+          "type": "string",
+          "x-since": 2
+        },
+        "stages": {
+          "anyOf": [
+            {
+              "items": {
+                "maximum": 12,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Gain indices the regulation may choose from, ascending; every capture gain of the run is one of them. null exactly when mode is fixed.",
+          "title": "Stages",
+          "x-since": 2
+        }
+      },
+      "required": [
+        "mode",
+        "stages"
+      ],
+      "title": "GainControl",
       "type": "object"
     },
     "RunConfig": {
