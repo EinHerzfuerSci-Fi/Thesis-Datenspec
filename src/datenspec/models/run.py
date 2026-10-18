@@ -12,6 +12,7 @@ from pydantic import Field
 
 from ._base import Count, Uuid, meta
 from .header import RecordHeader
+from .profile import ProfileName, RunConfig
 from .vocab import RunEndReason
 
 
@@ -41,6 +42,17 @@ class RunStartRecord(_RunRecord):
     )
     cmd_id: Uuid | None = Field(
         description="id of the cmd that started the run; null if started on the device.",
+        json_schema_extra=meta(since=2),
+    )
+    profile: ProfileName = Field(
+        description="Profile the run measures with: the one named in the start command, "
+        "or the device's default profile if the command named none or the run was "
+        "started on the device.",
+        json_schema_extra=meta(since=2),
+    )
+    cfg: RunConfig = Field(
+        description="Settings of profile as resolved at the start, fixed for the whole "
+        "run. Read these instead of the profile file, which may have changed since.",
         json_schema_extra=meta(since=2),
     )
 

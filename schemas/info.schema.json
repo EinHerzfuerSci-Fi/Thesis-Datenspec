@@ -2,49 +2,6 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "x-schema-version": 2,
   "$defs": {
-    "InfoCapture": {
-      "description": "Timing of one TCS3448 capture cycle.",
-      "properties": {
-        "sequence": {
-          "description": "illumination values in capture order.",
-          "items": {
-            "enum": [
-              "dark",
-              "nir",
-              "blue",
-              "vis"
-            ],
-            "type": "string"
-          },
-          "title": "Sequence",
-          "type": "array",
-          "x-since": 1
-        },
-        "settle_ms": {
-          "description": "LED settling time before integration starts.",
-          "minimum": 0,
-          "title": "Settle Ms",
-          "type": "integer",
-          "x-since": 1,
-          "x-unit": "ms"
-        },
-        "on_ms": {
-          "description": "LED on-time per capture.",
-          "minimum": 0,
-          "title": "On Ms",
-          "type": "integer",
-          "x-since": 1,
-          "x-unit": "ms"
-        }
-      },
-      "required": [
-        "sequence",
-        "settle_ms",
-        "on_ms"
-      ],
-      "title": "InfoCapture",
-      "type": "object"
-    },
     "InfoDs18b20": {
       "description": "DS18B20 configuration.",
       "properties": {
@@ -103,6 +60,34 @@
       "title": "InfoPio",
       "type": "object"
     },
+    "InfoProfiles": {
+      "description": "Measurement profiles on the device. Their settings are not repeated here: they can\nchange per run, so each run's start record carries them as cfg.",
+      "properties": {
+        "names": {
+          "description": "Profiles a start command can name, without duplicates.",
+          "items": {
+            "pattern": "^[a-z0-9_]+$",
+            "type": "string"
+          },
+          "title": "Names",
+          "type": "array",
+          "x-since": 2
+        },
+        "default": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$",
+          "description": "Profile used when the start command names none, or the run is started on the device; one of names.",
+          "x-since": 2,
+          "title": "Default"
+        }
+      },
+      "required": [
+        "names",
+        "default"
+      ],
+      "title": "InfoProfiles",
+      "type": "object"
+    },
     "InfoPwm": {
       "description": "PWM dimming of the LEDs.",
       "properties": {
@@ -156,7 +141,7 @@
       "type": "object"
     },
     "InfoSys": {
-      "description": "Device identity and sampling.",
+      "description": "Device identity.",
       "properties": {
         "device_name": {
           "description": "Configurable device name used for better readability",
@@ -169,20 +154,11 @@
           "title": "Reset Cause",
           "type": "string",
           "x-since": 1
-        },
-        "sample_interval_ms": {
-          "description": "Interval between measurement cycles.",
-          "exclusiveMinimum": 0,
-          "title": "Sample Interval Ms",
-          "type": "integer",
-          "x-since": 1,
-          "x-unit": "ms"
         }
       },
       "required": [
         "device_name",
-        "reset_cause",
-        "sample_interval_ms"
+        "reset_cause"
       ],
       "title": "InfoSys",
       "type": "object"
@@ -393,9 +369,9 @@
       "type": "array",
       "x-since": 1
     },
-    "capture": {
-      "$ref": "#/$defs/InfoCapture",
-      "x-since": 1
+    "profiles": {
+      "$ref": "#/$defs/InfoProfiles",
+      "x-since": 2
     },
     "pio": {
       "$ref": "#/$defs/InfoPio",
@@ -433,7 +409,7 @@
     "ds18b20",
     "tcs3448",
     "leds",
-    "capture",
+    "profiles",
     "pio",
     "pwm",
     "sd"

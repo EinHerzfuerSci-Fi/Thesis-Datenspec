@@ -4,7 +4,8 @@ from pydantic import Field, model_validator
 
 from ._base import Count, HexId16, SpecModel, meta
 from .header import RecordHeader
-from .vocab import Illumination, LedId
+from .profile import ProfileName
+from .vocab import LedId
 
 
 class SensorsFound(SpecModel):
@@ -39,7 +40,7 @@ class LedInfo(SpecModel):
 
 
 class InfoSys(SpecModel):
-    """Device identity and sampling."""
+    """Device identity."""
 
     device_name: str = Field(
         description="Configurable device name used for better readability",
@@ -47,10 +48,6 @@ class InfoSys(SpecModel):
     )
     reset_cause: str = Field(
         description="Cause of the last reset.", json_schema_extra=meta()
-    )
-    sample_interval_ms: Annotated[int, Field(gt=0)] = Field(
-        description="Interval between measurement cycles.",
-        json_schema_extra=meta(unit="ms"),
     )
 
 
@@ -80,19 +77,29 @@ class InfoTcs3448(SpecModel):
     )
 
 
-class InfoCapture(SpecModel):
-    """Timing of one TCS3448 capture cycle."""
+class InfoProfiles(SpecModel):
+    """
+    Measurement profiles on the device. Their settings are not repeated here: they can
+    change per run, so each run's start record carries them as cfg.
+    """
 
-    sequence: list[Illumination] = Field(
-        description="illumination values in capture order.", json_schema_extra=meta()
+    names: list[ProfileName] = Field(
+        description="Profiles a start command can name, without duplicates.",
+        json_schema_extra=meta(since=2),
     )
-    settle_ms: Count = Field(
-        description="LED settling time before integration starts.",
-        json_schema_extra=meta(unit="ms"),
+    default: ProfileName = Field(
+        description="Profile used when the start command names none, or the run is "
+        "started on the device; one of names.",
+        json_schema_extra=meta(since=2),
     )
-    on_ms: Count = Field(
-        description="LED on-time per capture.", json_schema_extra=meta(unit="ms")
-    )
+
+    @model_validator(mode="after")
+    def _default_listed_names_unique(self) -> Self:
+        if len(set(self.names)) != len(self.names):
+            raise ValueError("names contains duplicates")
+        if self.default not in self.names:
+            raise ValueError("default is not one of names")
+        return self
 
 
 class InfoPio(SpecModel):
@@ -148,7 +155,7 @@ class InfoRecord(RecordHeader):
     leds: list[LedInfo] = Field(
         description="Illumination LEDs fitted to the device.", json_schema_extra=meta()
     )
-    capture: InfoCapture = Field(json_schema_extra=meta())
+    profiles: InfoProfiles = Field(json_schema_extra=meta(since=2))
     pio: InfoPio = Field(json_schema_extra=meta())
     pwm: InfoPwm = Field(json_schema_extra=meta())
     sd: InfoSd | None = Field(

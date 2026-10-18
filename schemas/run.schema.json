@@ -2,6 +2,72 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "x-schema-version": 2,
   "$defs": {
+    "CaptureConfig": {
+      "description": "Timing of one TCS3448 capture cycle.",
+      "properties": {
+        "sequence": {
+          "description": "illumination values in capture order; exactly one dark, as in data m.tcs3448.",
+          "items": {
+            "enum": [
+              "dark",
+              "nir",
+              "blue",
+              "vis"
+            ],
+            "type": "string"
+          },
+          "title": "Sequence",
+          "type": "array",
+          "x-since": 2
+        },
+        "settle_ms": {
+          "description": "LED settling time before integration starts.",
+          "minimum": 0,
+          "title": "Settle Ms",
+          "type": "integer",
+          "x-since": 2,
+          "x-unit": "ms"
+        },
+        "on_ms": {
+          "description": "LED on-time per capture.",
+          "minimum": 0,
+          "title": "On Ms",
+          "type": "integer",
+          "x-since": 2,
+          "x-unit": "ms"
+        }
+      },
+      "required": [
+        "sequence",
+        "settle_ms",
+        "on_ms"
+      ],
+      "title": "CaptureConfig",
+      "type": "object"
+    },
+    "RunConfig": {
+      "description": "Measurement settings of a run, resolved from its profile. Also the value type of the\ndevice's profile file.",
+      "properties": {
+        "sample_interval_ms": {
+          "description": "Interval between measurement cycles.",
+          "exclusiveMinimum": 0,
+          "title": "Sample Interval Ms",
+          "type": "integer",
+          "x-since": 2,
+          "x-unit": "ms"
+        },
+        "capture": {
+          "$ref": "#/$defs/CaptureConfig",
+          "x-since": 2
+        }
+      },
+      "required": [
+        "sample_interval_ms",
+        "capture"
+      ],
+      "title": "RunConfig",
+      "type": "object"
+    },
     "RunEndRecord": {
       "description": "End of a run; sent after its last data record, in the same boot as the start record.\nIts up is greater than or equal to, and its seq greater than, those of the start\nrecord. This relates two records, so the models cannot check it.",
       "properties": {
@@ -259,6 +325,18 @@
           "description": "id of the cmd that started the run; null if started on the device.",
           "title": "Cmd Id",
           "x-since": 2
+        },
+        "profile": {
+          "description": "Profile the run measures with: the one named in the start command, or the device's default profile if the command named none or the run was started on the device.",
+          "pattern": "^[a-z0-9_]+$",
+          "title": "Profile",
+          "type": "string",
+          "x-since": 2
+        },
+        "cfg": {
+          "$ref": "#/$defs/RunConfig",
+          "description": "Settings of profile as resolved at the start, fixed for the whole run. Read these instead of the profile file, which may have changed since.",
+          "x-since": 2
         }
       },
       "required": [
@@ -274,7 +352,9 @@
         "ev",
         "dur",
         "session",
-        "cmd_id"
+        "cmd_id",
+        "profile",
+        "cfg"
       ],
       "title": "RunStartRecord",
       "type": "object"

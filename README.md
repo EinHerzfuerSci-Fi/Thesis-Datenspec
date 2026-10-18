@@ -10,7 +10,7 @@ Everything else is generated from them and checked in:
 | Artefact | Path | Consumer |
 |---|---|---|
 | Pydantic models, helpers | `src/datenspec/` | analysis software (`pip install`) |
-| JSON Schemas (header + one per record kind) | `schemas/*.schema.json` | any tooling |
+| JSON Schemas (header, one per record kind, the profile file) | `schemas/*.schema.json` | any tooling |
 | MicroPython constants | `pico/datenspec_const.py` | firmware (submodule or copy) |
 | AsyncAPI 3.0 | `asyncapi/asyncapi.yaml` | documentation, tooling |
 | Field and topic reference | this README | humans |
@@ -136,6 +136,14 @@ the whole line. Prefer a new optional group in an existing record.
   command answers with an `ack` carrying the command's `id` as `cmd_id`. `stop` names
   the run to stop; a device ignores it (`res: "rejected"`) if that is not its active
   run, so a late or repeated stop cannot end the next run.
+- **Profiles** say how a run measures (sample interval, capture sequence and timing);
+  the run says when. The device keeps them in a profile file, a map from name to
+  settings (`schemas/profiles.schema.json`, model `ProfileFile`). `cmd start` names
+  one in `profile`, or `null` for the device's default; an unknown name is answered
+  with `res: "rejected"`. `info.profiles` lists the names and the default, so the
+  laptop can check a name before sending. The run's start record carries the profile
+  name and its resolved settings as `cfg`, which apply for the whole run: read the
+  settings there, not from the profile file, which may have changed since.
 - **Sessions, annotations and tags** go from the laptop to the pipeline only, on
   `thesis/laptop/session`, `thesis/laptop/annotation` and `thesis/laptop/tag`. They are
   named after the sender because they belong to no single device. All carry an `id`
@@ -196,12 +204,15 @@ tooling) accepts records that break them:
   capture
 - `tele`: `buf.fill` ≤ `buf.cap`; `ntp.last_up` ≤ `up`
 - `info`: the `vis` LED has `peak_nm: null`; `ds18b20.rom` is set exactly when
-  `sensors.ds18b20` is true; `sd.free` ≤ `sd.total`
+  `sensors.ds18b20` is true; `sd.free` ≤ `sd.total`; `profiles.names` has no
+  duplicates and contains `profiles.default`
+- `run` and the profile file: `cfg.capture.sequence` has exactly one `dark`
 - `alert`: `thr` is required when `val` is set (this one is in the schema as
   `dependentRequired` and in the model)
 - `annotation`: `run` requires `dev` (in the schema as `if`/`then` and in the model)
 
-Rules across two records (the end of a run after its start) are in neither.
+Rules across two records (the end of a run after its start, the captures of a
+`data` record matching its run's `cfg.capture.sequence`) are in neither.
 
 The AsyncAPI file declares the payload schema format as JSON Schema 2020-12, which
 AsyncAPI tools are not required to support (only draft-07 is mandatory).
@@ -350,10 +361,9 @@ Nested fields use dotted paths; `[]` marks list elements. `Since v` is the schem
 
 | Field | Type | Unit | Required | Description | Since v |
 |---|---|---|---|---|---|
-| `sys` | object |  | required | Device identity and sampling. | 1 |
+| `sys` | object |  | required | Device identity. | 1 |
 | `sys.device_name` | string |  | required | Configurable device name used for better readability | 1 |
 | `sys.reset_cause` | string |  | required | Cause of the last reset. | 1 |
-| `sys.sample_interval_ms` | integer (> 0) | ms | required | Interval between measurement cycles. | 1 |
 | `sensors` | object |  | required | Sensors detected at boot. Firmware does not rescan, so this is not updated during the boot; data records show which sensors actually respond. Sensor configuration is in the per-sensor groups regardless of detection. | 1 |
 | `sensors.ds18b20` | boolean |  | required | The DS18B20 was found on the bus. | 1 |
 | `sensors.dht22` | boolean |  | required | DHT22 responded. | 1 |
@@ -368,10 +378,9 @@ Nested fields use dotted paths; `[]` marks list elements. `Since v` is the schem
 | `leds[].id` | "nir" \| "blue" \| "vis" |  | required | LED ID; also the key in data led. | 1 |
 | `leds[].peak_nm` | integer (> 0) \| null | nm | required | Peak wavelength; null for the broadband 'vis' LED. | 1 |
 | `leds[].pin` | integer (≥ 0) |  | required | GPIO number. | 1 |
-| `capture` | object |  | required | Timing of one TCS3448 capture cycle. | 1 |
-| `capture.sequence` | array of "dark" \| "nir" \| "blue" \| "vis" |  | required | illumination values in capture order. | 1 |
-| `capture.settle_ms` | integer (≥ 0) | ms | required | LED settling time before integration starts. | 1 |
-| `capture.on_ms` | integer (≥ 0) | ms | required | LED on-time per capture. | 1 |
+| `profiles` | object |  | required | Measurement profiles on the device. Their settings are not repeated here: they can change per run, so each run's start record carries them as cfg. | 2 |
+| `profiles.names` | array of string `^[a-z0-9_]+$` |  | required | Profiles a start command can name, without duplicates. | 2 |
+| `profiles.default` | string `^[a-z0-9_]+$` |  | required | Profile used when the start command names none, or the run is started on the device; one of names. | 2 |
 | `pio` | object |  | required | PIO program that drives the LEDs in sync with the TCS3448. | 1 |
 | `pio.hz` | integer (> 0) | Hz | required | PIO state machine clock. | 1 |
 | `pio.prog` | string |  | required | PIO program version. | 1 |
@@ -404,6 +413,13 @@ Start of a run; sent before its first data record.
 | `dur` | integer (> 0) \| null | s | required | Planned duration; null = unlimited, runs until stopped. | 2 |
 | `session` | string (UUID) \| null |  | required | Session this run belongs to, taken from the start command; null if none. | 2 |
 | `cmd_id` | string (UUID) \| null |  | required | id of the cmd that started the run; null if started on the device. | 2 |
+| `profile` | string `^[a-z0-9_]+$` |  | required | Profile the run measures with: the one named in the start command, or the device's default profile if the command named none or the run was started on the device. | 2 |
+| `cfg` | object |  | required | Settings of profile as resolved at the start, fixed for the whole run. Read these instead of the profile file, which may have changed since. | 2 |
+| `cfg.sample_interval_ms` | integer (> 0) | ms | required | Interval between measurement cycles. | 2 |
+| `cfg.capture` | object |  | required | Timing of one TCS3448 capture cycle. | 2 |
+| `cfg.capture.sequence` | array of "dark" \| "nir" \| "blue" \| "vis" |  | required | illumination values in capture order; exactly one dark, as in data m.tcs3448. | 2 |
+| `cfg.capture.settle_ms` | integer (≥ 0) | ms | required | LED settling time before integration starts. | 2 |
+| `cfg.capture.on_ms` | integer (≥ 0) | ms | required | LED on-time per capture. | 2 |
 
 #### `"ev": "end"`
 
@@ -441,6 +457,7 @@ Start a run.
 | `act` | "start" |  | required | Action to perform. | 2 |
 | `dur` | integer (> 0) \| null | s | required | Planned duration of the run; null = the device's configured default duration. | 2 |
 | `session` | string (UUID) \| null |  | required | Session the run belongs to; null if none. | 2 |
+| `profile` | string `^[a-z0-9_]+$` \| null |  | required | Profile to measure with; null = the device's default profile. A name the device does not have is answered with ack rejected. | 2 |
 | `run` | null |  | required | Always null for start: the device assigns the run ID. | 2 |
 | `ts` | number (≥ 0.0) | s | required | Send time on the laptop, Unix seconds UTC. | 2 |
 
@@ -454,6 +471,7 @@ Stop a run. The device ignores it (ack rejected) unless run is its active run.
 | `act` | "stop" |  | required | Action to perform. | 2 |
 | `dur` | null |  | required | Always null for stop. | 2 |
 | `session` | null |  | required | Always null for stop. | 2 |
+| `profile` | null |  | required | Always null for stop. | 2 |
 | `run` | integer (≥ 0) |  | required | Run to stop. | 2 |
 | `ts` | number (≥ 0.0) | s | required | Send time on the laptop, Unix seconds UTC. | 2 |
 
