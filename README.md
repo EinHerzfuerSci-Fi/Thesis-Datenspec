@@ -206,13 +206,17 @@ tooling) accepts records that break them:
 - `info`: the `vis` LED has `peak_nm: null`; `ds18b20.rom` is set exactly when
   `sensors.ds18b20` is true; `sd.free` ≤ `sd.total`; `profiles.names` has no
   duplicates and contains `profiles.default`
-- `run` and the profile file: `cfg.capture.sequence` has exactly one `dark`
+- `run` and the profile file: `cfg.capture.sequence` has exactly one `dark`;
+  `cfg.capture.gain_control.stages` is `null` exactly when `mode` is `fixed`, and
+  otherwise holds at least two strictly ascending gain indices
 - `alert`: `thr` is required when `val` is set (this one is in the schema as
-  `dependentRequired` and in the model)
+  `dependentRequired` and in the model); `ref_seq` is `null` exactly when `run` is
+  `null` (in the schema as `if`/`then`/`else` and in the model)
 - `annotation`: `run` requires `dev` (in the schema as `if`/`then` and in the model)
 
 Rules across two records (the end of a run after its start, the captures of a
-`data` record matching its run's `cfg.capture.sequence`) are in neither.
+`data` record matching its run's `cfg.capture.sequence`, every capture `gain` of a
+regulated run being one of its `cfg.capture.gain_control.stages`) are in neither.
 
 The AsyncAPI file declares the payload schema format as JSON Schema 2020-12, which
 AsyncAPI tools are not required to support (only draft-07 is mandatory).
@@ -321,7 +325,7 @@ Nested fields use dotted paths; `[]` marks list elements. `Since v` is the schem
 | `val` | number \| null |  | optional | Value that triggered the transition, in the unit of the monitored quantity. | 1 |
 | `thr` | number \| null |  | optional | Threshold that was crossed, same unit as val. | 1 |
 | `sev` | "warn" \| "crit" |  | required | Severity of the alarm. | 1 |
-| `ref_seq` | integer (≥ 0) |  | required | seq of the data record that triggered the transition, in the run given by run: the record's key is (dev, run, ref_seq). | 1 |
+| `ref_seq` | integer (≥ 0) \| null |  | required | seq of the data record that triggered the transition, in the run given by run: the record's key is (dev, run, ref_seq). null exactly when run is null: alarms are watched outside runs too, where there is no data record. | 1 |
 
 ### `tele` (`"k": "tele"`, from the Pico)
 
@@ -373,7 +377,7 @@ Nested fields use dotted paths; `[]` marks list elements. `Since v` is the schem
 | `ds18b20.rom` | string `^[0-9a-f]{16}$` \| null |  | required | ROM ID of the device's only DS18B20; also the key in data m.ds18b20. null if none was found. | 2 |
 | `tcs3448` | object |  | required | TCS3448 configuration. | 1 |
 | `tcs3448.smux_mode` | integer |  | required | SMUX mode of the TCS3448. | 1 |
-| `tcs3448.agc` | boolean |  | required | Gain control mode of the tcs3448 sensor. | 1 |
+| `tcs3448.agc` | boolean |  | required | Whether the active run regulates the TCS3448 gain, i.e. its cfg.capture.gain_control.mode is not fixed; false outside a run. | 1 |
 | `leds` | array of object |  | required | Illumination LEDs fitted to the device. | 1 |
 | `leds[].id` | "nir" \| "blue" \| "vis" |  | required | LED ID; also the key in data led. | 1 |
 | `leds[].peak_nm` | integer (> 0) \| null | nm | required | Peak wavelength; null for the broadband 'vis' LED. | 1 |
@@ -420,6 +424,9 @@ Start of a run; sent before its first data record.
 | `cfg.capture.sequence` | array of "dark" \| "nir" \| "blue" \| "vis" |  | required | illumination values in capture order; exactly one dark, as in data m.tcs3448. | 2 |
 | `cfg.capture.settle_ms` | integer (≥ 0) | ms | required | LED settling time before integration starts. | 2 |
 | `cfg.capture.on_ms` | integer (≥ 0) | ms | required | LED on-time per capture. | 2 |
+| `cfg.capture.gain_control` | object |  | required | How the run picks the gain of each capture. | 2 |
+| `cfg.capture.gain_control.mode` | "fixed" \| "ams" \| "dark" |  | required | fixed: every capture uses the gain its profile names. ams: the auto-gain search of ams AN001051, per illumination from one cycle to the next. dark: the gain of each lit capture predicted from the cycle's dark capture and the LED's share in the previous cycle. | 2 |
+| `cfg.capture.gain_control.stages` | array of integer (0…12) \| null |  | required | Gain indices the regulation may choose from, ascending; every capture gain of the run is one of them. null exactly when mode is fixed. | 2 |
 
 #### `"ev": "end"`
 

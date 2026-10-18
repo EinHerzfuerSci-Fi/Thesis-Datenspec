@@ -11,10 +11,43 @@ from typing import Annotated, Self
 from pydantic import Field, model_validator
 
 from ._base import Count, SpecModel, meta
-from .vocab import Illumination
+from .vocab import GainMode, Illumination
 
 ProfileName = Annotated[str, Field(pattern=r"^[a-z0-9_]+$")]
 """Same alphabet as tag keys: safe in file names, topics and CLI arguments."""
+
+
+GainIndex = Annotated[int, Field(ge=0, le=12)]
+"""TCS3448 gain index 0..12, factor 0.5..2048 as in data m.tcs3448[].gain."""
+
+
+class GainControl(SpecModel):
+    """How the run picks the gain of each capture."""
+
+    mode: GainMode = Field(
+        description="fixed: every capture uses the gain its profile names. ams: the "
+        "auto-gain search of ams AN001051, per illumination from one cycle to the next. "
+        "dark: the gain of each lit capture predicted from the cycle's dark capture and "
+        "the LED's share in the previous cycle.",
+        json_schema_extra=meta(since=2),
+    )
+    stages: list[GainIndex] | None = Field(
+        description="Gain indices the regulation may choose from, ascending; every "
+        "capture gain of the run is one of them. null exactly when mode is fixed.",
+        json_schema_extra=meta(since=2),
+    )
+
+    @model_validator(mode="after")
+    def _stages_match_mode(self) -> Self:
+        if self.mode == "fixed":
+            if self.stages is not None:
+                raise ValueError("stages must be null when mode is fixed")
+            return self
+        if self.stages is None or len(self.stages) < 2:
+            raise ValueError("a regulating mode needs at least two stages")
+        if any(a >= b for a, b in zip(self.stages, self.stages[1:])):
+            raise ValueError("stages must be strictly ascending")
+        return self
 
 
 class CaptureConfig(SpecModel):
@@ -32,6 +65,7 @@ class CaptureConfig(SpecModel):
     on_ms: Count = Field(
         description="LED on-time per capture.", json_schema_extra=meta(unit="ms", since=2)
     )
+    gain_control: GainControl = Field(json_schema_extra=meta(since=2))
 
     @model_validator(mode="after")
     def _one_dark(self) -> Self:

@@ -72,7 +72,8 @@ class InfoTcs3448(SpecModel):
     )
     automatic_gain_control: bool = Field(
         alias="agc",
-        description="Gain control mode of the tcs3448 sensor.",
+        description="Whether the active run regulates the TCS3448 gain, i.e. its "
+        "cfg.capture.gain_control.mode is not fixed; false outside a run.",
         json_schema_extra=meta(),
     )
 

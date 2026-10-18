@@ -18,14 +18,26 @@ SCHEMA = json.loads(
 )
 ADAPTER = TypeAdapter(ProfileFile)
 
+FIXED = {"mode": "fixed", "stages": None}
+
 PROFILES: dict[str, Any] = {
     "turbidity": {
         "sample_interval_ms": 5000,
-        "capture": {"sequence": ["dark", "nir"], "settle_ms": 20, "on_ms": 100},
+        "capture": {
+            "sequence": ["dark", "nir"],
+            "settle_ms": 20,
+            "on_ms": 100,
+            "gain_control": FIXED,
+        },
     },
     "led_test": {
         "sample_interval_ms": 2000,
-        "capture": {"sequence": ["dark", "nir"], "settle_ms": 20, "on_ms": 100},
+        "capture": {
+            "sequence": ["dark", "nir"],
+            "settle_ms": 20,
+            "on_ms": 100,
+            "gain_control": FIXED,
+        },
     },
 }
 
@@ -47,7 +59,14 @@ def test_profile_name_rejected_by_model_and_schema() -> None:
 def test_profile_needs_exactly_one_dark_capture() -> None:
     bad = {
         "nir_only": PROFILES["turbidity"]
-        | {"capture": {"sequence": ["nir"], "settle_ms": 20, "on_ms": 100}}
+        | {
+            "capture": {
+                "sequence": ["nir"],
+                "settle_ms": 20,
+                "on_ms": 100,
+                "gain_control": FIXED,
+            }
+        }
     }
     with pytest.raises(ValidationError, match="exactly one dark"):
         ADAPTER.validate_python(bad)

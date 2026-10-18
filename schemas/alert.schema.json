@@ -7,6 +7,20 @@
     ]
   },
   "description": "Record of raised or cleared alarms.",
+  "else": {
+    "properties": {
+      "ref_seq": {
+        "type": "integer"
+      }
+    }
+  },
+  "if": {
+    "properties": {
+      "run": {
+        "type": "null"
+      }
+    }
+  },
   "properties": {
     "v": {
       "description": "Version of the schema. Increased only on breaking changes.",
@@ -153,10 +167,17 @@
       "x-since": 1
     },
     "ref_seq": {
-      "description": "seq of the data record that triggered the transition, in the run given by run: the record's key is (dev, run, ref_seq).",
-      "minimum": 0,
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "seq of the data record that triggered the transition, in the run given by run: the record's key is (dev, run, ref_seq). null exactly when run is null: alarms are watched outside runs too, where there is no data record.",
       "title": "Ref Seq",
-      "type": "integer",
       "x-since": 1
     }
   },
@@ -176,6 +197,13 @@
     "sev",
     "ref_seq"
   ],
+  "then": {
+    "properties": {
+      "ref_seq": {
+        "type": "null"
+      }
+    }
+  },
   "title": "AlertRecord",
   "type": "object"
 }

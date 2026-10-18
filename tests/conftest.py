@@ -106,7 +106,12 @@ BODIES: dict[str, dict[str, Any]] = {
         "profile": "turbidity",
         "cfg": {
             "sample_interval_ms": 10000,
-            "capture": {"sequence": ["dark", "nir"], "settle_ms": 5, "on_ms": 120},
+            "capture": {
+                "sequence": ["dark", "nir"],
+                "settle_ms": 5,
+                "on_ms": 120,
+                "gain_control": {"mode": "fixed", "stages": None},
+            },
         },
     },
     "ack": {
