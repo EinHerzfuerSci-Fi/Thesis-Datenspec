@@ -73,18 +73,27 @@ def test_profile_name_rejected_by_model_and_schema() -> None:
         Draft202012Validator(SCHEMA).validate(bad)
 
 
-def test_profile_needs_exactly_one_dark_capture() -> None:
+def test_profile_needs_a_dark_capture() -> None:
     bad = {
         "nir_only": PROFILES["turbidity"]
         | {"capture": {"captures": [NIR], "gain_control": FIXED}}
     }
-    with pytest.raises(ValidationError, match="exactly one dark"):
+    with pytest.raises(ValidationError, match="at least one dark capture, got 0"):
         ADAPTER.validate_python(bad)
 
 
-def test_two_dark_steps_are_rejected() -> None:
-    with pytest.raises(ValidationError, match="exactly one dark capture, got 2"):
-        _capture(DARK, NIR, DARK)
+def test_one_dark_step_per_setting_is_valid() -> None:
+    # NIR at a long integration, blue and vis at a short one: each needs its own dark.
+    short = step("dark", gap=50)
+    blue, vis = step("blue", settle=20, on=60), step("vis", settle=5, on=60)
+    capture = _capture(DARK, NIR, short, blue, vis)
+    assert capture.sequence == ["dark", "nir", "dark", "blue", "vis"]
+    profiles = {
+        "scatter_split": PROFILES["turbidity"]
+        | {"capture": {"captures": [DARK, NIR, short, blue, vis], "gain_control": FIXED}}
+    }
+    ADAPTER.validate_python(profiles, context={FORBID_EXTRA: True})
+    Draft202012Validator(SCHEMA).validate(profiles)
 
 
 def test_gated_step_does_not_count_as_dark() -> None:

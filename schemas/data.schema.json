@@ -140,7 +140,7 @@
               "type": "null"
             }
           ],
-          "description": "Captures in acquisition order: one per step of the run's cfg.capture.captures, in that order.",
+          "description": "Captures in acquisition order: one per step of the run's cfg.capture.captures, in that order; at least one dark.",
           "title": "Tcs3448",
           "x-since": 1
         }

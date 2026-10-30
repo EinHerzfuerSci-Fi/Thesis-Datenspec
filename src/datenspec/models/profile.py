@@ -27,8 +27,8 @@ class GainControl(SpecModel):
     mode: GainMode = Field(
         description="fixed: every capture uses the gain its profile names. ams: the "
         "auto-gain search of ams AN001051, per illumination from one cycle to the next. "
-        "dark: the gain of each lit capture predicted from the cycle's dark capture and "
-        "the LED's share in the previous cycle.",
+        "dark: the gain of each lit capture predicted from the most recent dark capture "
+        "before it in the cycle and the LED's share in the previous cycle.",
         json_schema_extra=meta(since=2),
     )
     stages: list[GainIndex] | None = Field(
@@ -113,7 +113,7 @@ class CaptureConfig(SpecModel):
     """Timing of one TCS3448 capture cycle."""
 
     captures: list[CaptureStep] = Field(
-        description="Captures in acquisition order, each with its own timing; exactly "
+        description="Captures in acquisition order, each with its own timing; at least "
         "one dark. data m.tcs3448 holds one capture per step, in this order.",
         json_schema_extra=meta(since=3),
     )
@@ -125,12 +125,13 @@ class CaptureConfig(SpecModel):
         return [c.illumination for c in self.captures]
 
     @model_validator(mode="after")
-    def _one_dark(self) -> Self:
+    def _has_dark(self) -> Self:
         # A profile the data record could never satisfy is rejected where it is written.
         # Gated captures are lit (ill names their LED), so they never count as dark.
-        n_dark = self.sequence.count("dark")
-        if n_dark != 1:
-            raise ValueError(f"captures need exactly one dark capture, got {n_dark}")
+        # More than one dark is allowed: a dark subtracts exactly only at the gain and
+        # integration of the captures it serves, so each setting needs its own.
+        if "dark" not in self.sequence:
+            raise ValueError("captures need at least one dark capture, got 0")
         return self
 
 

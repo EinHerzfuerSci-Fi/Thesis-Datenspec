@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.0.0
+
+More than one dark capture per cycle. A dark reference subtracts exactly only at the
+gain and integration of the capture it serves, so a cycle that measures NIR scatter at a
+long integration and blue/vis at a short one needs one dark per setting. Schema `v3`
+changed in place: no device has written `v3` yet (the firmware for 0.6.0 is
+unreleased), so `v` stays 3. Every record and profile file valid under 0.6.0 is valid
+under 1.0.0; the reverse holds for cycles with one dark.
+
+- `run` start and the profile file: `cfg.capture.captures` needs at least one `dark`
+  step instead of exactly one. Gated steps still never count as dark; every `dark`
+  step keeps `settle_ms`, `delay_ms` and `on_ms` 0.
+- `data`: `m.tcs3448` needs at least one `dark` capture instead of exactly one. Every
+  `dark` capture has all LED duty cycles 0 and `gated` false, as before.
+- `cfg.capture.gain_control.mode` `dark` reworded: the gain of each lit capture is
+  predicted from the most recent dark capture before it in the cycle.
+- Examples: run 10 (`scatter_split`) with a dark before `nir` at a long integration and
+  a second dark before `blue` and `vis` at a short one, and one of its data records.
+  The invalid cases "two dark steps in captures" and "two dark captures in cycle" are
+  removed; the cases without a dark capture stay.
+- Pico constants: unchanged apart from the version header.
+
 ## 0.6.0
 
 Timing per capture, dark gaps and gated integration. Light lingers after an LED

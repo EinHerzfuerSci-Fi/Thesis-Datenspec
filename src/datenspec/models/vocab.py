@@ -15,7 +15,7 @@ LedId = Literal["nir", "blue", "vis"]
 Illumination = Literal["dark", "nir", "blue", "vis"]
 
 # How a run picks the TCS3448 gain per capture: fixed from the profile, the ams
-# auto-gain search (AN001051), or predicted from the cycle's dark capture.
+# auto-gain search (AN001051), or predicted from the most recent dark capture before it.
 GainMode = Literal["fixed", "ams", "dark"]
 
 AlarmId = Literal["temp_high", "temp_low", "humidity_high"]

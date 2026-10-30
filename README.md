@@ -83,7 +83,9 @@ both are in `.run/`.
   and adds `gated` to the `data` captures. The firmware writes `v: 3` in every record.
   `data` and `run` start records require `v: 3`; all other kinds are unchanged by v3
   and accept `v: 2` or `v: 3`, so their records from firmware 1.0.0 stay valid. v2
-  `data` and `run` start records are read with package 0.5.5.
+  `data` and `run` start records are read with package 0.5.5. Package 1.0.0 changed
+  v3 in place, before any device wrote it: a cycle may hold more than one `dark`
+  capture.
 
 A new record kind (a new value of `k`) is not backwards compatible: older readers reject
 the whole line. Prefer a new optional group in an existing record.
@@ -186,16 +188,19 @@ the time of the measurement or event, not of sending.
 - **TCS3448** (18-slot SMUX): the 13 spectral channels are sent, not the slots;
   `vis_2` and `vis_3` (VIS from the 2nd and 3rd SMUX cycle) are optional and reveal
   light changes during a measurement. Flicker slots (5, 11, 17) are not sent. Each
-  cycle has exactly one `dark` capture (all LEDs off) for ambient subtraction.
+  cycle has at least one `dark` capture (all LEDs off) for ambient subtraction. A dark
+  subtracts exactly only at its own `gain`, `atime` and `astep`, so a cycle that
+  measures at several settings (e.g. `nir` at a long integration, `blue` and `vis` at a
+  short one) has one `dark` per setting.
   - Every capture has its own timing, a step of `cfg.capture.captures`, in this order:
     `gap_ms` all LEDs off, `settle_ms` LED on, `delay_ms` LED off, then the
     integration, with the LED on for the first `on_ms` of it. The gap lets light from
     the previous capture fade (delayed fluorescence, phosphor afterglow, LED driver
-    tails); for the `dark` capture it is the whole capture, and its LED phases are 0.
+    tails); for a `dark` capture it is the whole capture, and its LED phases are 0.
   - A **gated** capture (`delay_ms > 0`) integrates in the dark after a pulse of
     `settle_ms`, and measures the light that lingers. Its `on_ms` is 0, and the data
     capture says `gated: true`. `ill` names the pulsed LED, so a gated capture is never
-    the cycle's `dark` capture.
+    a `dark` capture.
   - Integration time = (atime + 1) × (astep + 1) × 2.78 µs
   - Full scale = min(65535, (atime + 1) × (astep + 1)); computed, not sent
   - `gain` is an index 0…12 for the factors 0.5, 1, 2, …, 2048; with AGC it is the
@@ -218,13 +223,13 @@ Some rules exist only as validators in the Pydantic models and are **not** in th
 exported JSON Schemas. A consumer that validates with the schemas alone (e.g. AsyncAPI
 tooling) accepts records that break them:
 
-- `data`: exactly one `dark` capture per cycle; all LED duty cycles 0 and `gated`
-  false in the `dark` capture
+- `data`: at least one `dark` capture per cycle; all LED duty cycles 0 and `gated`
+  false in every `dark` capture
 - `tele`: `buf.fill` ≤ `buf.cap`; `ntp.last_up` ≤ `up`
 - `info`: the `vis` LED has `peak_nm: null`; `ds18b20.rom` is set exactly when
   `sensors.ds18b20` is true; `sd.free` ≤ `sd.total`; `profiles.names` has no
   duplicates and contains `profiles.default`
-- `run` and the profile file: `cfg.capture.captures` has exactly one `dark` step;
+- `run` and the profile file: `cfg.capture.captures` has at least one `dark` step;
   a `dark` step has `settle_ms`, `delay_ms` and `on_ms` 0; a lit step with `delay_ms`
   0 has `on_ms` > 0; a gated step (`delay_ms` > 0) has `settle_ms` > 0 and `on_ms` 0;
   `cfg.capture.gain_control.stages` is `null` exactly when `mode` is `fixed`, and
@@ -308,7 +313,7 @@ Nested fields use dotted paths; `[]` marks list elements. `Since v` is the schem
 | `m.dht22` | object \| null |  | required | Temperature and humidity; null as a whole if the sensor does not respond. | 1 |
 | `m.dht22.t` | number (-40.0…80.0) \| null | °C | required | Air temperature. | 1 |
 | `m.dht22.rh` | number (0.0…1.0) \| null | 1 | required | Relative humidity as fraction, not percent. | 1 |
-| `m.tcs3448` | array of object \| null |  | required | Captures in acquisition order: one per step of the run's cfg.capture.captures, in that order. | 1 |
+| `m.tcs3448` | array of object \| null |  | required | Captures in acquisition order: one per step of the run's cfg.capture.captures, in that order; at least one dark. | 1 |
 | `m.tcs3448[].ill` | "dark" \| "nir" \| "blue" \| "vis" |  | required | LED of this capture; dark means none. | 1 |
 | `m.tcs3448[].gated` | boolean |  | required | The LEDs were off during the integration: a gated capture, its step in cfg.capture.captures has delay_ms > 0. Always false for dark. | 3 |
 | `m.tcs3448[].led` | object |  | required | Duty-cycle setpoint per LED of this capture's pulse. Model, not dict, so all three LEDs are required. | 1 |
@@ -448,14 +453,14 @@ Start of a run; sent before its first data record.
 | `cfg` | object |  | required | Settings of profile as resolved at the start, fixed for the whole run. Read these instead of the profile file, which may have changed since. | 2 |
 | `cfg.sample_interval_ms` | integer (> 0) | ms | required | Interval between measurement cycles. | 2 |
 | `cfg.capture` | object |  | required | Timing of one TCS3448 capture cycle. | 2 |
-| `cfg.capture.captures` | array of object |  | required | Captures in acquisition order, each with its own timing; exactly one dark. data m.tcs3448 holds one capture per step, in this order. | 3 |
+| `cfg.capture.captures` | array of object |  | required | Captures in acquisition order, each with its own timing; at least one dark. data m.tcs3448 holds one capture per step, in this order. | 3 |
 | `cfg.capture.captures[].ill` | "dark" \| "nir" \| "blue" \| "vis" |  | required | LED of this capture; dark means none. | 3 |
 | `cfg.capture.captures[].gap_ms` | integer (≥ 0) | ms | required | All LEDs off before this capture starts; the dark time of a dark capture. | 3 |
 | `cfg.capture.captures[].settle_ms` | integer (≥ 0) | ms | required | LED on before the integration starts. | 3 |
 | `cfg.capture.captures[].delay_ms` | integer (≥ 0) | ms | required | LED off between the end of settle_ms and the integration start. 0: the LED stays on into the integration; > 0: gated capture, integrating the light that lingers after the pulse. | 3 |
 | `cfg.capture.captures[].on_ms` | integer (≥ 0) | ms | required | LED on after the integration starts. | 3 |
 | `cfg.capture.gain_control` | object |  | required | How the run picks the gain of each capture. | 2 |
-| `cfg.capture.gain_control.mode` | "fixed" \| "ams" \| "dark" |  | required | fixed: every capture uses the gain its profile names. ams: the auto-gain search of ams AN001051, per illumination from one cycle to the next. dark: the gain of each lit capture predicted from the cycle's dark capture and the LED's share in the previous cycle. | 2 |
+| `cfg.capture.gain_control.mode` | "fixed" \| "ams" \| "dark" |  | required | fixed: every capture uses the gain its profile names. ams: the auto-gain search of ams AN001051, per illumination from one cycle to the next. dark: the gain of each lit capture predicted from the most recent dark capture before it in the cycle and the LED's share in the previous cycle. | 2 |
 | `cfg.capture.gain_control.stages` | array of integer (0…12) \| null |  | required | Gain indices the regulation may choose from, ascending; every capture gain of the run is one of them. null exactly when mode is fixed. | 2 |
 
 #### `"ev": "end"`

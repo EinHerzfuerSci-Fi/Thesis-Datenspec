@@ -55,8 +55,38 @@ def test_gated_capture_does_not_count_as_dark(make_record) -> None:
     record = make_record("data", m=wire("data")["m"] | {"tcs3448": cycle})
     assert [c.gated for c in record.measurements.tcs3448] == [False, True]
     only_gated = [capture("blue", gated=True)]
-    with pytest.raises(ValidationError, match="exactly one dark capture, got 0"):
+    with pytest.raises(ValidationError, match="at least one dark capture, got 0"):
         make_record("data", m=wire("data")["m"] | {"tcs3448": only_gated})
+
+
+def test_one_dark_capture_per_setting_is_valid(make_record) -> None:
+    # Each dark subtracts exactly only at its own gain and integration.
+    long = {"gain": 8, "astep": 1199}
+    cycle = [
+        capture("dark", **long),
+        capture("nir", **long),
+        capture("dark", gain=10),
+        capture("blue", gain=10),
+        capture("vis", gain=10),
+    ]
+    record = make_record("data", m=wire("data")["m"] | {"tcs3448": cycle})
+    darks = [c for c in record.measurements.tcs3448 if c.illumination == "dark"]
+    assert [(c.gain, c.astep) for c in darks] == [(8, 1199), (10, 599)]
+    _schema("data").validate(wire("data", m=wire("data")["m"] | {"tcs3448": cycle}))
+
+
+def test_every_dark_capture_needs_leds_off(make_record) -> None:
+    lit_dark = capture("dark", led={"nir": 0.0, "blue": 0.1, "vis": 0.0})
+    cycle = [capture("dark"), capture("nir"), lit_dark, capture("blue")]
+    with pytest.raises(ValidationError, match="duty cycles to be 0") as exc_info:
+        make_record("data", m=wire("data")["m"] | {"tcs3448": cycle})
+    assert {e["loc"][-2:] for e in exc_info.value.errors()} == {("tcs3448", 2)}
+
+
+def test_every_dark_capture_must_not_be_gated(make_record) -> None:
+    cycle = [capture("dark"), capture("nir"), capture("dark", gated=True)]
+    with pytest.raises(ValidationError, match="dark capture cannot be gated"):
+        make_record("data", m=wire("data")["m"] | {"tcs3448": cycle})
 
 
 def test_versions() -> None:

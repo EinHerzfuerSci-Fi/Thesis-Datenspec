@@ -166,7 +166,7 @@ class Measurements(SpecModel):
     dht22: Dht22 | None = Field(json_schema_extra=meta())
     tcs3448: list[TcsCapture] | None = Field(
         description="Captures in acquisition order: one per step of the run's "
-        "cfg.capture.captures, in that order.",
+        "cfg.capture.captures, in that order; at least one dark.",
         json_schema_extra=meta(),
     )
 
@@ -177,12 +177,13 @@ class Measurements(SpecModel):
         return [rom for rom, t in self.ds18b20.items() if t == DS18B20_POWER_ON_DEFAULT]
 
     @model_validator(mode="after")
-    def _one_dark_capture(self) -> Self:
-        # Dark correction needs exactly one ambient reference per cycle.
-        if self.tcs3448 is not None:
-            n_dark = sum(c.illumination == "dark" for c in self.tcs3448)
-            if n_dark != 1:
-                raise ValueError(f"tcs3448 needs exactly one dark capture, got {n_dark}")
+    def _has_dark_capture(self) -> Self:
+        # Dark correction needs an ambient reference per cycle; one per gain and
+        # integration setting, so a cycle may hold several.
+        if self.tcs3448 is not None and not any(
+            c.illumination == "dark" for c in self.tcs3448
+        ):
+            raise ValueError("tcs3448 needs at least one dark capture, got 0")
         return self
 
 
