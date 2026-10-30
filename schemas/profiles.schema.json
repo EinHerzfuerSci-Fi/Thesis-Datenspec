@@ -1,40 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "x-schema-version": 2,
+  "x-schema-version": 3,
   "$defs": {
     "CaptureConfig": {
       "description": "Timing of one TCS3448 capture cycle.",
       "properties": {
-        "sequence": {
-          "description": "illumination values in capture order; exactly one dark, as in data m.tcs3448.",
+        "captures": {
+          "description": "Captures in acquisition order, each with its own timing; exactly one dark. data m.tcs3448 holds one capture per step, in this order.",
           "items": {
-            "enum": [
-              "dark",
-              "nir",
-              "blue",
-              "vis"
-            ],
-            "type": "string"
+            "$ref": "#/$defs/CaptureStep"
           },
-          "title": "Sequence",
+          "title": "Captures",
           "type": "array",
-          "x-since": 2
-        },
-        "settle_ms": {
-          "description": "LED settling time before integration starts.",
-          "minimum": 0,
-          "title": "Settle Ms",
-          "type": "integer",
-          "x-since": 2,
-          "x-unit": "ms"
-        },
-        "on_ms": {
-          "description": "LED on-time per capture.",
-          "minimum": 0,
-          "title": "On Ms",
-          "type": "integer",
-          "x-since": 2,
-          "x-unit": "ms"
+          "x-since": 3
         },
         "gain_control": {
           "$ref": "#/$defs/GainControl",
@@ -42,12 +20,68 @@
         }
       },
       "required": [
-        "sequence",
-        "settle_ms",
-        "on_ms",
+        "captures",
         "gain_control"
       ],
       "title": "CaptureConfig",
+      "type": "object"
+    },
+    "CaptureStep": {
+      "description": "One capture of the cycle and its timing. The fields are in the time order of the\nphases: gap (all LEDs off), settle (LED on), delay (LED off), then the integration,\nwith the LED on for on_ms after its start. The LED never switches during an\nintegration, so a gated capture (delay_ms > 0) integrates entirely in the dark.",
+      "properties": {
+        "ill": {
+          "description": "LED of this capture; dark means none.",
+          "enum": [
+            "dark",
+            "nir",
+            "blue",
+            "vis"
+          ],
+          "title": "Ill",
+          "type": "string",
+          "x-since": 3
+        },
+        "gap_ms": {
+          "description": "All LEDs off before this capture starts; the dark time of a dark capture.",
+          "minimum": 0,
+          "title": "Gap Ms",
+          "type": "integer",
+          "x-since": 3,
+          "x-unit": "ms"
+        },
+        "settle_ms": {
+          "description": "LED on before the integration starts.",
+          "minimum": 0,
+          "title": "Settle Ms",
+          "type": "integer",
+          "x-since": 3,
+          "x-unit": "ms"
+        },
+        "delay_ms": {
+          "description": "LED off between the end of settle_ms and the integration start. 0: the LED stays on into the integration; > 0: gated capture, integrating the light that lingers after the pulse.",
+          "minimum": 0,
+          "title": "Delay Ms",
+          "type": "integer",
+          "x-since": 3,
+          "x-unit": "ms"
+        },
+        "on_ms": {
+          "description": "LED on after the integration starts.",
+          "minimum": 0,
+          "title": "On Ms",
+          "type": "integer",
+          "x-since": 3,
+          "x-unit": "ms"
+        }
+      },
+      "required": [
+        "ill",
+        "gap_ms",
+        "settle_ms",
+        "delay_ms",
+        "on_ms"
+      ],
+      "title": "CaptureStep",
       "type": "object"
     },
     "GainControl": {

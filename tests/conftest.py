@@ -9,7 +9,7 @@ import pytest
 from datenspec.models import FORBID_EXTRA, Record, TcsCapture, validate_record
 
 HEADER: dict[str, Any] = {
-    "v": 2,
+    "v": 3,
     "dev": "e6614104032b5a2c",
     "fw": "0.4.1+17b375f",
     "boot": 3,
@@ -43,6 +43,7 @@ def capture(ill: str = "dark", **overrides: Any) -> dict[str, Any]:
         duty[ill] = 0.5
     return {
         "ill": ill,
+        "gated": False,
         "led": duty,
         "dt": 0,
         "gain": 9,
@@ -107,9 +108,22 @@ BODIES: dict[str, dict[str, Any]] = {
         "cfg": {
             "sample_interval_ms": 10000,
             "capture": {
-                "sequence": ["dark", "nir"],
-                "settle_ms": 5,
-                "on_ms": 120,
+                "captures": [
+                    {
+                        "ill": "dark",
+                        "gap_ms": 50,
+                        "settle_ms": 0,
+                        "delay_ms": 0,
+                        "on_ms": 0,
+                    },
+                    {
+                        "ill": "nir",
+                        "gap_ms": 20,
+                        "settle_ms": 5,
+                        "delay_ms": 0,
+                        "on_ms": 120,
+                    },
+                ],
                 "gain_control": {"mode": "fixed", "stages": None},
             },
         },

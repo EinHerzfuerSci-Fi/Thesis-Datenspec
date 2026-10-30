@@ -10,7 +10,7 @@ from typing import Annotated, Literal
 
 from pydantic import Field
 
-from ._base import Count, Uuid, meta
+from ._base import CAPTURE_TIMING_VERSION, SCHEMA_VERSION, Count, Uuid, meta
 from .header import RecordHeader
 from .profile import ProfileName, RunConfig
 from .vocab import RunEndReason
@@ -27,6 +27,14 @@ class _RunRecord(RecordHeader):
 class RunStartRecord(_RunRecord):
     """Start of a run; sent before its first data record."""
 
+    schema_version: Annotated[
+        int, Field(ge=CAPTURE_TIMING_VERSION, le=SCHEMA_VERSION)
+    ] = Field(
+        alias="v",
+        description="Version of the schema. Increased only on breaking changes. A start "
+        "record needs 3: v2 cfg.capture has run-wide timing.",
+        json_schema_extra=meta(),
+    )
     event: Literal["start"] = Field(
         alias="ev", description="Run event.", json_schema_extra=meta(since=2)
     )

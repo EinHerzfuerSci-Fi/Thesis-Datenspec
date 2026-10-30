@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "x-schema-version": 2,
+  "x-schema-version": 3,
   "description": "Sets or deletes a key/value tag on a run. Every message is kept as history; the\ncurrent value of a key is the one with the newest ts.",
   "properties": {
     "v": {
       "description": "Version of the schema. Increased only on breaking changes.",
-      "maximum": 2,
+      "maximum": 3,
       "minimum": 2,
       "title": "V",
       "type": "integer",

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "x-schema-version": 2,
+  "x-schema-version": 3,
   "$defs": {
     "TeleBuf": {
       "description": "RAM buffer of records.",
@@ -187,7 +187,7 @@
   "properties": {
     "v": {
       "description": "Version of the schema. Increased only on breaking changes.",
-      "maximum": 2,
+      "maximum": 3,
       "minimum": 2,
       "title": "V",
       "type": "integer",

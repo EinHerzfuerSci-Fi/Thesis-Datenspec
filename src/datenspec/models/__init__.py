@@ -1,4 +1,9 @@
-from ._base import FORBID_EXTRA, MIN_SCHEMA_VERSION, SCHEMA_VERSION
+from ._base import (
+    CAPTURE_TIMING_VERSION,
+    FORBID_EXTRA,
+    MIN_SCHEMA_VERSION,
+    SCHEMA_VERSION,
+)
 from .ack import AckRecord
 from .alert import AlertRecord
 from .data import DataRecord, Dht22, LedDuty, Measurements, TcsCapture, TcsRaw
@@ -31,7 +36,14 @@ from .laptop import (
     validate_laptop_message,
 )
 from .log import LogRecord
-from .profile import CaptureConfig, GainControl, ProfileFile, ProfileName, RunConfig
+from .profile import (
+    CaptureConfig,
+    CaptureStep,
+    GainControl,
+    ProfileFile,
+    ProfileName,
+    RunConfig,
+)
 from .record import (
     RECORD_KINDS,
     RECORD_MODELS,
@@ -44,6 +56,7 @@ from .run import RunEndRecord, RunRecord, RunStartRecord
 from .tele import TeleBuf, TeleMqtt, TeleNtp, TeleRecord, TeleSd, TeleSys, TeleWlan
 
 __all__ = [
+    "CAPTURE_TIMING_VERSION",
     "FORBID_EXTRA",
     "LAPTOP_KINDS",
     "LAPTOP_MODELS",
@@ -55,6 +68,7 @@ __all__ = [
     "AlertRecord",
     "AnnotationMessage",
     "CaptureConfig",
+    "CaptureStep",
     "GainControl",
     "CmdMessage",
     "CmdStart",

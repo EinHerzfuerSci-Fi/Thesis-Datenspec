@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "x-schema-version": 2,
+  "x-schema-version": 3,
   "description": "Answer to a cmd, one per device that received it (so one per Pico for a cmd to all).\nThe header's run is the run after handling the command: the new run for an accepted\nstart, the stopped run for an accepted stop.",
   "properties": {
     "v": {
       "description": "Version of the schema. Increased only on breaking changes.",
-      "maximum": 2,
+      "maximum": 3,
       "minimum": 2,
       "title": "V",
       "type": "integer",

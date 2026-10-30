@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "x-schema-version": 2,
+  "x-schema-version": 3,
   "$defs": {
     "Dht22": {
       "description": "Temperature and humidity; null as a whole if the sensor does not respond.",
@@ -46,7 +46,7 @@
       "type": "object"
     },
     "LedDuty": {
-      "description": "Duty-cycle setpoint per LED. Model, not dict, so all three LEDs are required.",
+      "description": "Duty-cycle setpoint per LED of this capture's pulse. Model, not dict, so all three\nLEDs are required.",
       "properties": {
         "nir": {
           "description": "PWM duty-cycle setpoint. Light output is neither linear in duty cycle nor independent of LED temperature.",
@@ -140,7 +140,7 @@
               "type": "null"
             }
           ],
-          "description": "Captures in acquisition order, each under different illumination.",
+          "description": "Captures in acquisition order: one per step of the run's cfg.capture.captures, in that order.",
           "title": "Tcs3448",
           "x-since": 1
         }
@@ -154,10 +154,10 @@
       "type": "object"
     },
     "TcsCapture": {
-      "description": "One integration under one illumination.",
+      "description": "One integration, for one step of the run's cfg.capture.captures.",
       "properties": {
         "ill": {
-          "description": "Illumination during this capture; dark means all LEDs off.",
+          "description": "LED of this capture; dark means none.",
           "enum": [
             "dark",
             "nir",
@@ -167,6 +167,12 @@
           "title": "Ill",
           "type": "string",
           "x-since": 1
+        },
+        "gated": {
+          "description": "The LEDs were off during the integration: a gated capture, its step in cfg.capture.captures has delay_ms > 0. Always false for dark.",
+          "title": "Gated",
+          "type": "boolean",
+          "x-since": 3
         },
         "led": {
           "$ref": "#/$defs/LedDuty",
@@ -276,6 +282,7 @@
       },
       "required": [
         "ill",
+        "gated",
         "led",
         "dt",
         "gain",
@@ -464,9 +471,9 @@
   "description": "One measurement cycle.",
   "properties": {
     "v": {
-      "description": "Version of the schema. Increased only on breaking changes.",
-      "maximum": 2,
-      "minimum": 2,
+      "description": "Version of the schema. Increased only on breaking changes. data needs 3: v2 data has no gated.",
+      "maximum": 3,
+      "minimum": 3,
       "title": "V",
       "type": "integer",
       "x-since": 1

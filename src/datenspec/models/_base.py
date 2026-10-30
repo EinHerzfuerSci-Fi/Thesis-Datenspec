@@ -4,7 +4,7 @@ from typing import Annotated, Any
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, model_validator
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 """
 Wire-format version, sent as `v` in every record. Bumped only on breaking changes;
 the package itself is versioned separately with SemVer.
@@ -12,8 +12,15 @@ the package itself is versioned separately with SemVer.
 
 MIN_SCHEMA_VERSION = 2
 """
-Oldest version the models accept. v1 was never deployed (no device or SD card wrote
+Oldest version the header accepts. v1 was never deployed (no device or SD card wrote
 it), so its readers were dropped instead of kept alongside v2.
+"""
+
+CAPTURE_TIMING_VERSION = 3
+"""
+Oldest version data and run start records accept: v3 replaced the run-wide capture
+timing by one timing per capture and added data m.tcs3448[].gated. Kinds whose shape
+v3 left unchanged still accept v2, so records device firmware 1.0.0 wrote stay valid.
 """
 
 FORBID_EXTRA = "forbid_extra"

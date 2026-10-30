@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "x-schema-version": 2,
+  "x-schema-version": 3,
   "description": "Firmware log message. Separate from err: err reports module failures with a code,\nlog is the general diagnostic stream.",
   "properties": {
     "v": {
       "description": "Version of the schema. Increased only on breaking changes.",
-      "maximum": 2,
+      "maximum": 3,
       "minimum": 2,
       "title": "V",
       "type": "integer",

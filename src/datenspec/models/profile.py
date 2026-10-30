@@ -50,29 +50,87 @@ class GainControl(SpecModel):
         return self
 
 
+class CaptureStep(SpecModel):
+    """
+    One capture of the cycle and its timing. The fields are in the time order of the
+    phases: gap (all LEDs off), settle (LED on), delay (LED off), then the integration,
+    with the LED on for on_ms after its start. The LED never switches during an
+    integration, so a gated capture (delay_ms > 0) integrates entirely in the dark.
+    """
+
+    illumination: Illumination = Field(
+        alias="ill",
+        description="LED of this capture; dark means none.",
+        json_schema_extra=meta(since=3),
+    )
+    gap_ms: Count = Field(
+        description="All LEDs off before this capture starts; the dark time of a dark "
+        "capture.",
+        json_schema_extra=meta(unit="ms", since=3),
+    )
+    settle_ms: Count = Field(
+        description="LED on before the integration starts.",
+        json_schema_extra=meta(unit="ms", since=3),
+    )
+    delay_ms: Count = Field(
+        description="LED off between the end of settle_ms and the integration start. 0: "
+        "the LED stays on into the integration; > 0: gated capture, integrating the "
+        "light that lingers after the pulse.",
+        json_schema_extra=meta(unit="ms", since=3),
+    )
+    on_ms: Count = Field(
+        description="LED on after the integration starts.",
+        json_schema_extra=meta(unit="ms", since=3),
+    )
+
+    @property
+    def gated(self) -> bool:
+        """The LEDs are off during the integration; data sends this as gated."""
+        return self.delay_ms > 0
+
+    @model_validator(mode="after")
+    def _timing_matches_illumination(self) -> Self:
+        if self.illumination == "dark":
+            if self.settle_ms or self.delay_ms or self.on_ms:
+                raise ValueError(
+                    "a dark capture has no LED phase: settle_ms, delay_ms and on_ms "
+                    "must be 0"
+                )
+        elif self.gated:
+            if self.settle_ms == 0:
+                raise ValueError("a gated capture needs settle_ms > 0, its pulse")
+            if self.on_ms:
+                raise ValueError(
+                    "a gated capture needs on_ms 0: the LED never switches during an "
+                    "integration"
+                )
+        elif self.on_ms == 0:
+            raise ValueError("a lit capture that is not gated needs on_ms > 0")
+        return self
+
+
 class CaptureConfig(SpecModel):
     """Timing of one TCS3448 capture cycle."""
 
-    sequence: list[Illumination] = Field(
-        description="illumination values in capture order; exactly one dark, as in "
-        "data m.tcs3448.",
-        json_schema_extra=meta(since=2),
-    )
-    settle_ms: Count = Field(
-        description="LED settling time before integration starts.",
-        json_schema_extra=meta(unit="ms", since=2),
-    )
-    on_ms: Count = Field(
-        description="LED on-time per capture.", json_schema_extra=meta(unit="ms", since=2)
+    captures: list[CaptureStep] = Field(
+        description="Captures in acquisition order, each with its own timing; exactly "
+        "one dark. data m.tcs3448 holds one capture per step, in this order.",
+        json_schema_extra=meta(since=3),
     )
     gain_control: GainControl = Field(json_schema_extra=meta(since=2))
+
+    @property
+    def sequence(self) -> list[Illumination]:
+        """ill of every capture in order; derived, not sent (cfg.capture.sequence in v2)."""
+        return [c.illumination for c in self.captures]
 
     @model_validator(mode="after")
     def _one_dark(self) -> Self:
         # A profile the data record could never satisfy is rejected where it is written.
+        # Gated captures are lit (ill names their LED), so they never count as dark.
         n_dark = self.sequence.count("dark")
         if n_dark != 1:
-            raise ValueError(f"sequence needs exactly one dark capture, got {n_dark}")
+            raise ValueError(f"captures need exactly one dark capture, got {n_dark}")
         return self
 
 

@@ -1,5 +1,47 @@
 # Changelog
 
+## 0.6.0
+
+Timing per capture, dark gaps and gated integration. Light lingers after an LED
+switches off (delayed chlorophyll fluorescence, phosphor afterglow, LED driver tails),
+so one run-wide `settle_ms` and `on_ms` could not describe what the device measured,
+and integration could only start while the LED was on. Now every capture of the cycle
+carries its own timing, a dark gap may precede it, and a capture may integrate in the
+dark after its pulse (gated capture).
+
+**Schema `v3`.** Firmware 1.0.0 has written `v2` records to device_1, so `v2` can no
+longer change in place. The README's rule applies: a field is removed
+(`cfg.capture.sequence`, `settle_ms`, `on_ms`) and a required field is added
+(`m.tcs3448[].gated`), both breaking, so `v` increases to 3. The firmware writes
+`v: 3` in every record (`SCHEMA_VERSION = 3`). Only `data` and `run` start records
+changed shape, so only they require `v: 3`; every other kind, `run` end included,
+accepts `v: 2` and `v: 3`, and its records from firmware 1.0.0 stay valid. `v2` `data`
+and `run` start records are rejected at `v`; read them with package 0.5.5.
+
+- `run` start and the profile file: `cfg.capture.sequence`, `cfg.capture.settle_ms` and
+  `cfg.capture.on_ms` removed. New required field `cfg.capture.captures`, a list of
+  steps in acquisition order, each with `ill` (`dark`, `nir`, `blue`, `vis`) and, in
+  the time order of its phases, `gap_ms` (all LEDs off), `settle_ms` (LED on),
+  `delay_ms` (LED off before the integration; `> 0` is a gated capture) and `on_ms`
+  (LED on after the integration starts), all integer ms ≥ 0. Exactly one `dark` step,
+  as before; gated steps do not count as dark. A `dark` step has `settle_ms`,
+  `delay_ms` and `on_ms` 0; a lit step with `delay_ms` 0 has `on_ms > 0`; a gated
+  step has `settle_ms > 0` and `on_ms` 0, so the LED never switches during an
+  integration. `gain_control` is unchanged. `CaptureConfig.sequence` remains as a
+  derived property (the `ill` of every step), not serialised. Profile files and start
+  records written under 0.5.x are rejected.
+- `data`: new required field `m.tcs3448[].gated`, true when the LEDs were off during the
+  integration (the step's `delay_ms > 0`). A `dark` capture is never gated. `ill`
+  reworded to "LED of this capture; dark means none", `led` to the duty setpoint of
+  this capture's pulse; `m.tcs3448` states that its captures are in the order of
+  `cfg.capture.captures`. `dt` is unchanged: start of integration relative to `up`.
+  Data records written under 0.5.x lack `gated` and are rejected.
+- `data`, `run` start: `v` must be 3. Header and all other kinds: `v` is 2 or 3.
+- New model `CaptureStep`, exported from `datenspec.models`; new constant
+  `CAPTURE_TIMING_VERSION = 3`, also exported.
+- Pico constants: `F_SEQUENCE` removed; `F_CAPTURES`, `F_GAP_MS`, `F_DELAY_MS`,
+  `F_GATED` added; `SCHEMA_VERSION = 3`.
+
 ## 0.5.5
 
 Version bump only. Schema, models and examples are unchanged from 0.5.0; `v` stays 2.

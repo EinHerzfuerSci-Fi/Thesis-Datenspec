@@ -2,7 +2,16 @@ from typing import Annotated, Literal, Self
 
 from pydantic import Field, model_validator
 
-from ._base import Count, Fraction, HexId16, SpecModel, Uint16, meta
+from ._base import (
+    CAPTURE_TIMING_VERSION,
+    SCHEMA_VERSION,
+    Count,
+    Fraction,
+    HexId16,
+    SpecModel,
+    Uint16,
+    meta,
+)
 from .header import RecordHeader
 from .vocab import Illumination
 
@@ -33,7 +42,10 @@ _DUTY_DESC = (
 
 
 class LedDuty(SpecModel):
-    """Duty-cycle setpoint per LED. Model, not dict, so all three LEDs are required."""
+    """
+    Duty-cycle setpoint per LED of this capture's pulse. Model, not dict, so all three
+    LEDs are required.
+    """
 
     nir: Fraction = Field(description=_DUTY_DESC, json_schema_extra=meta(unit="1"))
     blue: Fraction = Field(description=_DUTY_DESC, json_schema_extra=meta(unit="1"))
@@ -72,12 +84,17 @@ class TcsRaw(SpecModel):
 
 
 class TcsCapture(SpecModel):
-    """One integration under one illumination."""
+    """One integration, for one step of the run's cfg.capture.captures."""
 
     illumination: Illumination = Field(
         alias="ill",
-        description="Illumination during this capture; dark means all LEDs off.",
+        description="LED of this capture; dark means none.",
         json_schema_extra=meta(),
+    )
+    gated: bool = Field(
+        description="The LEDs were off during the integration: a gated capture, its "
+        "step in cfg.capture.captures has delay_ms > 0. Always false for dark.",
+        json_schema_extra=meta(since=3),
     )
     led: LedDuty = Field(json_schema_extra=meta())
     dt: int = Field(
@@ -121,8 +138,12 @@ class TcsCapture(SpecModel):
 
     @model_validator(mode="after")
     def _dark_means_leds_off(self) -> Self:
-        if self.illumination == "dark" and any(self.led.model_dump().values()):
-            raise ValueError("dark capture requires all LED duty cycles to be 0")
+        if self.illumination == "dark":
+            if any(self.led.model_dump().values()):
+                raise ValueError("dark capture requires all LED duty cycles to be 0")
+            # Gated has a pulse before the integration; dark has none, so never gated.
+            if self.gated:
+                raise ValueError("a dark capture cannot be gated")
         return self
 
 
@@ -144,7 +165,8 @@ class Measurements(SpecModel):
     )
     dht22: Dht22 | None = Field(json_schema_extra=meta())
     tcs3448: list[TcsCapture] | None = Field(
-        description="Captures in acquisition order, each under different illumination.",
+        description="Captures in acquisition order: one per step of the run's "
+        "cfg.capture.captures, in that order.",
         json_schema_extra=meta(),
     )
 
@@ -167,6 +189,14 @@ class Measurements(SpecModel):
 class DataRecord(RecordHeader):
     """One measurement cycle."""
 
+    schema_version: Annotated[
+        int, Field(ge=CAPTURE_TIMING_VERSION, le=SCHEMA_VERSION)
+    ] = Field(
+        alias="v",
+        description="Version of the schema. Increased only on breaking changes. data "
+        "needs 3: v2 data has no gated.",
+        json_schema_extra=meta(),
+    )
     kind: Literal["data"] = Field(alias="k", json_schema_extra=meta())
     run: Count = Field(
         description="ID of the run this cycle belongs to; data exists only within a run.",
